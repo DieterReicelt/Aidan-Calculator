@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedagogical Math Notebook</title>
+
+  <style>
+    /* =============================================
+       THEME VARIABLES
+       ============================================= */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      --calc-bg: #1e1e2e;
+      --display-bg: #fdfdfd; 
+      --grid-color: rgba(0, 150, 255, 0.12); 
+      --margin-color: rgba(255, 0, 0, 0.18); 
+      --text-main: #2c3e50; 
+      --text-dim: #6677aa;
+      --border-color: #2a2a4a;
+      --btn-sci-bg: #2a2a50;
+      --btn-sci-text: #a0b4ff;
+      --btn-num-bg: #252535;
+      --btn-num-text: #e8f4ff;
+      --btn-op-bg: #1a3a5c;
+      --btn-op-text: #7ec8e3;
+      --btn-clear-bg: #3a1a2a;
+      --btn-clear-text: #ff7096;
+      --btn-special-bg: #1a3a2a;
+      --btn-special-text: #7edca0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-gradient);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 10px 0;
+    }
+
+    h1 { color: #e0e0e0; font-size: 1.1rem; margin-bottom: 12px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
+
+    /* ---- TAB BAR ---- */
+    .tab-bar { display: flex; width: 520px; max-width: 95%; margin-bottom: -1px; gap: 4px; }
+    .tab-btn {
+      flex: 1; padding: 12px 5px; border: none; border-radius: 12px 12px 0 0; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      background: #13132a; color: #5566aa; transition: all 0.2s;
+    }
+    .tab-btn.active { background: #1e1e2e; color: #a0c4ff; }
+
+    /* ---- MAIN CALCULATOR BOX ---- */
+    .calculator {
+      background: #1e1e2e; border-radius: 0 0 20px 20px; padding: 25px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.5); width: 520px; max-width: 95%;
+      border: 1px solid var(--border-color);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* =============================================
+       NOTEBOOK DISPLAY SCREEN
+       ============================================= */
+    .display {
+      background-color: var(--display-bg);
+      background-image: 
+        linear-gradient(var(--margin-color) 2px, transparent 2px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+        linear-gradient(var(--grid-color) 1px, transparent 1px);
+      background-size: 100% 100%, 25px 25px, 25px 25px;
+      background-position: 0 45px, 0 0, 0 0;
+      border: 2px solid #888; border-radius: 6px;
+      padding: 15px 25px; margin-bottom: 20px; text-align: right;
+      position: relative; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+      min-height: 180px; display: flex; flex-direction: column; justify-content: flex-end;
+      overflow-x: auto;
+    }
+
+    .expression {
+      color: #2c3e50; font-family: 'Times New Roman', serif; font-style: italic; font-size: 1.2rem;
+      min-height: 25px; margin-bottom: 5px; z-index: 2;
+    }
+
+    .result {
+      color: #b22222; font-family: 'Courier New', monospace; font-size: 2.8rem;
+      font-weight: 700; letter-spacing: -1px; position: absolute; top: 5px; right: 25px; z-index: 2;
+    }
+
+    /* Long Division & Multiplication Grid Styles */
+    .math-grid {
+      display: inline-grid;
+      grid-template-columns: repeat(20, 25px); 
+      grid-auto-rows: 25px;
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #333;
+      text-align: center;
+    }
+    .cell { display: flex; align-items: center; justify-content: center; width: 25px; height: 25px; }
+    .ld-quotient { color: #b22222; }
+    .ld-bracket-top { border-top: 3px solid #333; }
+    .ld-bracket-side { border-left: 3px solid #333; border-top-left-radius: 10px; }
+    .cm-carry { color: #b22222; font-size: 0.8rem; }
+    .cm-res { color: #b22222; border-top: 2px solid #333; }
+    .sub-line { border-bottom: 2px solid #333; width: 100%; height: 2px; align-self: end; }
+
+    /* ---- BUTTONS & INPUTS ---- */
+    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    button { padding: 14px 4px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.1s; }
+    button:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
+    .btn-sci { background: var(--btn-sci-bg); color: var(--btn-sci-text); }
+    .btn-num { background: var(--btn-num-bg); color: var(--btn-num-text); }
+    .btn-op { background: var(--btn-op-bg); color: var(--btn-op-text); }
+    .btn-eq { background: linear-gradient(135deg, #4a90d9, #2a60a9); color: white; }
+    .btn-clear { background: var(--btn-clear-bg); color: var(--btn-clear-text); }
+    .btn-special { background: var(--btn-special-bg); color: var(--btn-special-text); }
+
+    .ld-input-row { display: flex; gap: 8px; margin-bottom: 12px; width: 100%; }
+    .ld-input { flex: 1; min-width: 0; padding: 12px; background: #13132a; border: 1px solid #3a3a6a; border-radius: 8px; color: #e8f4ff; text-align: center; outline: none; }
+    .ld-input:focus { border-color: #a0c4ff; background: #1a1a3a; }
+
+    /* KEYPAD STYLE */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(0,0,0,0.1);
+      border-radius: 12px;
+    }
+    .keypad button { padding: 12px 0; font-size: 1.1rem; }
+
+    .history-panel { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; max-height: 80px; overflow-y: auto; }
+    .history-item { font-size: 0.8rem; color: #8899bb; border-bottom: 1px solid #2a2a4a; padding: 2px 0; }
+    .history-item strong { color: #a0c4ff; }
+
+    .lesson-box { margin-top: 12px; background: #fffdf0; border: 1px dashed #ccc; border-radius: 8px; padding: 12px; color: #444; font-size: 0.85rem; display: none; }
+    .lesson-box.visible { display: block; }
+    .lesson-title { color: #b22222; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; }
+
+    @media print {
+      body { background: white !important; }
+      .tab-bar, .ld-input-row, button, .history-panel, .keypad { display: none !important; }
+      .calculator { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; }
+      .display { border: 1px solid #ccc !important; -webkit-print-color-adjust: exact; min-height: 400px; }
+      .lesson-box { display: block !important; border: 1px solid #ddd !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🔬 Math Notebook</h1>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('scientific')">🧮 Scientific</button>
+    <button class="tab-btn"        onclick="switchTab('advanced')">🧠 Advanced</button>
+    <button class="tab-btn"        onclick="switchTab('fraction')">½ Fractions</button>
+    <button class="tab-btn"        onclick="switchTab('column')">📏 Column Math</button>
+  </div>
+
+  <div class="calculator">
+
+    <!-- SCIENTIFIC PANEL -->
+    <div class="panel active" id="panel-scientific">
+      <div class="display">
+        <div class="result" id="sci-res">0</div>
+        <div class="expression" id="sci-expr"></div>
+      </div>
+      <div class="buttons">
+        <button class="btn-sci" id="angle-mode-btn" onclick="toggleAngleMode()">DEG</button>
+        <button class="btn-sci" onclick="calcSci('abs')">|x|</button>
+        <button class="btn-sci" onclick="calcSci('fact')">x!</button>
+        <button class="btn-sci" onclick="calcSci('prime')">Prime?</button>
+        <button class="btn-sci" onclick="calcSci('sin')">sin</button>
+        <button class="btn-sci" onclick="calcSci('cos')">cos</button>
+        <button class="btn-sci" onclick="calcSci('tan')">tan</button>
+        <button class="btn-sci" onclick="calcSci('sqrt')">√x</button>
+        <button class="btn-special" onclick="insertConst('pi')">π</button>
+        <button class="btn-special" onclick="insertConst('e')">e</button>
+        <button class="btn-special" onclick="insertConst('tau')">τ</button>
+        <button class="btn-special" onclick="insertConst('phi')">φ</button>
+        <button class="btn-sci" onclick="calcSci('log')">log</button>
+        <button class="btn-sci" onclick="calcSci('ln')">ln</button>
+        <button class="btn-sci" onclick="calcSci('sq')">x²</button>
+        <button class="btn-sci" onclick="calcSci('inv')">1/x</button>
+        <button class="btn-clear" onclick="clearSci()">AC</button>
+        <button class="btn-clear" onclick="backspace()">⌫</button>
+        <button class="btn-op" onclick="insertChar('(')">(</button>
+        <button class="btn-op" onclick="insertChar(')')">)</button>
+        <button class="btn-num" onclick="insertChar('7')">7</button>
+        <button class="btn-num" onclick="insertChar('8')">8</button>
+        <button class="btn-num" onclick="insertChar('9')">9</button>
+        <button class="btn-op" onclick="insertChar('/')">÷</button>
+        <button class="btn-num" onclick="insertChar('4')">4</button>
+        <button class="btn-num" onclick="insertChar('5')">5</button>
+        <button class="btn-num" onclick="insertChar('6')">6</button>
+        <button class="btn-op" onclick="insertChar('*')">×</button>
+        <button class="btn-num" onclick="insertChar('1')">1</button>
+        <button class="btn-num" onclick="insertChar('2')">2</button>
+        <button class="btn-num" onclick="insertChar('3')">3</button>
+        <button class="btn-op" onclick="insertChar('-')">−</button>
+        <button class="btn-num" onclick="insertChar('0')">0</button>
+        <button class="btn-num" onclick="insertChar('.')">.</button>
+        <button class="btn-op" onclick="insertChar('^')">xʸ</button>
+        <button class="btn-op" onclick="insertChar('+')">+</button>
+        <button class="btn-eq" onclick="calculateSci()" style="grid-column: span 4; margin-top:5px; font-size:1.2rem;">ENTER</button>
+      </div>
+      <div class="history-panel" id="sci-history"></div>
+    </div>
+
+    <!-- ADVANCED PARSER PANEL -->
+    <div class="panel" id="panel-advanced">
+      <div class="display" style="justify-content: flex-start; text-align: left; padding: 10px 15px;">
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 2px;">Infix Input</div>
+        <div id="adv-infix" style="font-family: 'Times New Roman', serif; font-size: 1.1rem; min-height: 1.4rem; color: #2c3e50; border-bottom: 1px dashed #ccc; margin-bottom: 8px;"></div>
+        
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 2px;">Postfix (RPN) Stack</div>
+        <div id="adv-postfix" style="font-family: 'Courier New', monospace; font-size: 0.9rem; min-height: 2.5rem; color: #5566aa; word-wrap: break-word;"></div>
+        
+        <div style="flex: 1;"></div>
+        <div id="adv-res" style="color: #b22222; font-family: 'Courier New', monospace; font-size: 2.2rem; font-weight: 700; text-align: right; width: 100%;">0</div>
+      </div>
+      <div class="buttons">
+        <button class="btn-sci" onclick="insertAdv('abs(')">|x|</button>
+        <button class="btn-sci" onclick="insertAdv('fact(')">x!</button>
+        <button class="btn-sci" onclick="insertAdv('sin(')">sin</button>
+        <button class="btn-sci" onclick="insertAdv('cos(')">cos</button>
+        <button class="btn-sci" onclick="insertAdv('tan(')">tan</button>
+        <button class="btn-sci" onclick="insertAdv('sqrt(')">√x</button>
+        <button class="btn-sci" onclick="insertAdv('log(')">log</button>
+        <button class="btn-sci" onclick="insertAdv('ln(')">ln</button>
+        <button class="btn-special" onclick="insertAdv('pi')">π</button>
+        <button class="btn-special" onclick="insertAdv('e')">e</button>
+        <button class="btn-special" onclick="insertAdv('tau')">τ</button>
+        <button class="btn-special" onclick="insertAdv('phi')">φ</button>
+        <button class="btn-clear" onclick="clearAdv()">AC</button>
+        <button class="btn-clear" onclick="backspaceAdv()">⌫</button>
+        <button class="btn-op" onclick="insertAdv('(')">(</button>
+        <button class="btn-op" onclick="insertAdv(')')">)</button>
+        <button class="btn-num" onclick="insertAdv('7')">7</button>
+        <button class="btn-num" onclick="insertAdv('8')">8</button>
+        <button class="btn-num" onclick="insertAdv('9')">9</button>
+        <button class="btn-op" onclick="insertAdv('/')">÷</button>
+        <button class="btn-num" onclick="insertAdv('4')">4</button>
+        <button class="btn-num" onclick="insertAdv('5')">5</button>
+        <button class="btn-num" onclick="insertAdv('6')">6</button>
+        <button class="btn-op" onclick="insertAdv('*')">×</button>
+        <button class="btn-num" onclick="insertAdv('1')">1</button>
+        <button class="btn-num" onclick="insertAdv('2')">2</button>
+        <button class="btn-num" onclick="insertAdv('3')">3</button>
+        <button class="btn-op" onclick="insertAdv('-')">−</button>
+        <button class="btn-num" onclick="insertAdv('0')">0</button>
+        <button class="btn-num" onclick="insertAdv('.')">.</button>
+        <button class="btn-op" onclick="insertAdv('^')">xʸ</button>
+        <button class="btn-op" onclick="insertAdv('+')">+</button>
+        <button class="btn-eq" onclick="calculateAdv()" style="grid-column: span 4; margin-top:5px; font-size:1.2rem;">EVALUATE SHUNTING-YARD</button>
+      </div>
+      <div class="lesson-box visible" style="margin-top: 15px; font-size: 0.75rem;">
+        <div class="lesson-title">How it works</div>
+        This parser uses the <strong>Shunting-yard algorithm</strong> to convert Infix notation to Postfix (RPN). 
+        The stack-based evaluator then processes the Postfix expression following strict PEMDAS rules.
+      </div>
+    </div>
+
+    <!-- FRACTION PANEL -->
+    <div class="panel" id="panel-fraction">
+      <div class="display" style="text-align:center; justify-content: center; min-height: 200px; background-position: 0 0;">
+        <div id="frac-visual-res" style="font-family:'Times New Roman', serif; font-size:1.8rem; color:#2c3e50;">Enter Fractions Below</div>
+        <div id="frac-dec-res" style="font-family:monospace; color:#666; font-size:1rem; margin-top:10px;"></div>
+      </div>
+
+      <div class="keypad" style="margin-bottom:15px;">
+        <button class="btn-num" onclick="keypadTypeFrac('7')">7</button><button class="btn-num" onclick="keypadTypeFrac('8')">8</button><button class="btn-num" onclick="keypadTypeFrac('9')">9</button>
+        <button class="btn-num" onclick="keypadTypeFrac('4')">4</button><button class="btn-num" onclick="keypadTypeFrac('5')">5</button><button class="btn-num" onclick="keypadTypeFrac('6')">6</button>
+        <button class="btn-num" onclick="keypadTypeFrac('1')">1</button><button class="btn-num" onclick="keypadTypeFrac('2')">2</button><button class="btn-num" onclick="keypadTypeFrac('3')">3</button>
+        <button class="btn-clear" style="background:#ff4757; color:#fff" onclick="keypadTypeFrac('AC')">AC</button>
+        <button class="btn-num" onclick="keypadTypeFrac('0')">0</button>
+        <button class="btn-clear" onclick="keypadTypeFrac('B')">⌫</button>
+      </div>
+
+      <div class="ld-input-row">
+        <input class="ld-input" type="number" id="f-a-w" placeholder="Whole" onfocus="setActiveFrac(this)" oninput="liveUpdateFrac()">
+        <input class="ld-input" type="number" id="f-a-n" placeholder="Num" onfocus="setActiveFrac(this)" oninput="liveUpdateFrac()">
+        <input class="ld-input" type="number" id="f-a-d" placeholder="Den" onfocus="setActiveFrac(this)" oninput="liveUpdateFrac()">
+      </div>
+      <div style="text-align:center; margin-bottom:10px;">
+        <button onclick="swapFractions()" style="background:#eee; padding:2px 10px; border-radius:4px; font-size:0.7rem; border:1px solid #ccc;">Swap A ⇄ B</button>
+      </div>
+      <div class="buttons" style="margin-bottom:10px;">
+        <button class="btn-op" id="f-op-add" onclick="setFracOp('+')">+</button>
+        <button class="btn-op" id="f-op-sub" onclick="setFracOp('-')">−</button>
+        <button class="btn-op" id="f-op-mul" onclick="setFracOp('*')">×</button>
+        <button class="btn-op" id="f-op-div" onclick="setFracOp('/')">÷</button>
+      </div>
+      <div class="ld-input-row">
+        <input class="ld-input" type="number" id="f-b-w" placeholder="Whole" onfocus="setActiveFrac(this)" oninput="liveUpdateFrac()">
+        <input class="ld-input" type="number" id="f-b-n" placeholder="Num" onfocus="setActiveFrac(this)" oninput="liveUpdateFrac()">
+        <input class="ld-input" type="number" id="f-b-d" placeholder="Den" onfocus="setActiveFrac(this)" oninput="liveUpdateFrac()">
+      </div>
+      <button class="btn-eq" style="width:100%; padding:15px; margin-top:10px;" onclick="calcFraction()">Calculate Fraction</button>
+      <div class="lesson-box" id="frac-lesson"></div>
+    </div>
+
+    <!-- COLUMN MATH PANEL -->
+    <div class="panel" id="panel-column">
+      <div class="ld-input-row">
+        <input class="ld-input" type="number" id="cm-n1" placeholder="Number 1" onfocus="setActiveInput(this)">
+        <select class="ld-input" id="cm-op" style="flex:0.4">
+          <option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option>
+        </select>
+        <input class="ld-input" type="number" id="cm-n2" placeholder="Number 2" onfocus="setActiveInput(this)">
+      </div>
+
+      <div class="display" style="text-align:left; justify-content: flex-start; min-height: 250px; background-position: 0 0;">
+        <div id="cm-placeholder" style="color:#999; text-align:center; margin-top:80px; width:100%">Enter numbers and show steps</div>
+        <div class="math-grid" id="cm-grid"></div>
+      </div>
+
+      <div class="keypad">
+        <button class="btn-num" onclick="keypadType('7')">7</button><button class="btn-num" onclick="keypadType('8')">8</button><button class="btn-num" onclick="keypadType('9')">9</button>
+        <button class="btn-num" onclick="keypadType('4')">4</button><button class="btn-num" onclick="keypadType('5')">5</button><button class="btn-num" onclick="keypadType('6')">6</button>
+        <button class="btn-num" onclick="keypadType('1')">1</button><button class="btn-num" onclick="keypadType('2')">2</button><button class="btn-num" onclick="keypadType('3')">3</button>
+        <button class="btn-clear" style="background:#ff4757; color:#fff" onclick="keypadType('AC')">AC</button>
+        <button class="btn-num" onclick="keypadType('0')">0</button>
+        <button class="btn-clear" onclick="keypadType('B')">⌫</button>
+      </div>
+
+      <button class="btn-eq" style="width:100%; padding:15px; margin-top:15px;" onclick="solveColumnMath()">Show Full Step-by-Step Solution</button>
+      <div class="lesson-box" id="cm-lesson"></div>
+      <button class="btn-sci" style="width:100%; margin-top:10px;" onclick="window.print()">🖨️ Export as PDF</button>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // --- FRACTION KEYPAD & LIVE LOGIC ---
+    let activeFracInput = null;
+    function setActiveFrac(el) { activeFracInput = el; }
+    function keypadTypeFrac(key) {
+      if (key === 'AC') { clearFraction(); return; }
+      if (!activeFracInput) activeFracInput = document.getElementById('f-a-w');
+      if (key === 'B') activeFracInput.value = activeFracInput.value.slice(0, -1);
+      else activeFracInput.value += key;
+      liveUpdateFrac();
+    }
+
+    function liveUpdateFrac() {
+      const getV = (id) => document.getElementById(id).value;
+      const format = (w, n, d) => {
+        if(!w && !n && !d) return "";
+        return `<div style="display:inline-flex; align-items:center; margin: 0 5px;">
+          ${w ? `<span>${w}</span>` : ""}
+          ${(n || d) ? `<div style="display:flex; flex-direction:column; align-items:center; margin-left:5px;">
+            <span style="border-bottom:2px solid #333; padding:0 3px;">${n || '0'}</span>
+            <span>${d || '1'}</span>
+          </div>` : ""}
+        </div>`;
+      };
+      let opSym = fracOp === '*' ? '×' : (fracOp === '/' ? '÷' : (fracOp === '-' ? '−' : '+'));
+      let visualA = format(getV('f-a-w'), getV('f-a-n'), getV('f-a-d'));
+      let visualB = format(getV('f-b-w'), getV('f-b-n'), getV('f-b-d'));
+      
+      if (!visualA && !visualB) {
+        document.getElementById('frac-visual-res').innerHTML = "Enter Fractions Below";
+      } else {
+        document.getElementById('frac-visual-res').innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+            ${visualA || "?"} <span style="color:#666">${opSym}</span> ${visualB || "?"}
+          </div>`;
+      }
+    }
+
+    // --- COLUMN MATH KEYPAD LOGIC ---
+    let activeInput = null;
+    function setActiveInput(el) { activeInput = el; }
+    function keypadType(key) {
+      if (key === 'AC') {
+        document.getElementById('cm-n1').value = ""; document.getElementById('cm-n2').value = "";
+        document.getElementById('cm-grid').innerHTML = ""; document.getElementById('cm-lesson').innerHTML = "";
+        document.getElementById('cm-lesson').classList.remove('visible');
+        document.getElementById('cm-placeholder').style.display = 'block'; return;
+      }
+      if (!activeInput) activeInput = document.getElementById('cm-n1');
+      if (key === 'B') activeInput.value = activeInput.value.slice(0, -1);
+      else if (key !== 'AC') activeInput.value += key;
+    }
+
+    // --- SCIENTIFIC LOGIC ---
+    let sciExpr = ""; let angleMode = "deg";
+    // Initialize history from localStorage safely
+    let sciHistoryRaw = localStorage.getItem('sciHistory');
+    let sciHistory = [];
+    try {
+      sciHistory = JSON.parse(sciHistoryRaw);
+      if (!Array.isArray(sciHistory)) sciHistory = [];
+    } catch(e) { sciHistory = []; }
+
+    window.addEventListener('load', updateSciHistory);
+
+    function insertChar(c) { sciExpr += c; updateSciDisplay(); }
+    function insertConst(n) { const m={'pi':'Math.PI','e':'Math.E','tau':'(Math.PI * 2)','phi':'((1 + Math.sqrt(5)) / 2)'}; sciExpr += m[n]; updateSciDisplay(); }
+    function updateSciDisplay() { 
+      document.getElementById('sci-expr').textContent = sciExpr.replace(/Math\.PI/g,'π').replace(/Math\.E/g,'e').replace(/\*\*/g,'^'); 
+      let last = sciExpr.split(/[\+\-\*\/\(]/).pop();
+      document.getElementById('sci-res').textContent = (last && !isNaN(last)) ? last : "0";
+    }
+    function clearSci() { sciExpr = ""; updateSciDisplay(); document.getElementById('sci-res').textContent = "0"; }
+    function backspace() { sciExpr = sciExpr.slice(0,-1); updateSciDisplay(); }
+    function toggleAngleMode() { angleMode = (angleMode==='deg'?'rad':'deg'); document.getElementById('angle-mode-btn').textContent = angleMode.toUpperCase(); }
+
+    function calculateSci() {
+      if (sciExpr === "") return;
+      try {
+        let cleanExpr = sciExpr.replace(/\^/g,'**');
+        let res = eval(cleanExpr);
+        if(!isFinite(res)) throw "err";
+        res = parseFloat(res.toFixed(10));
+        let niceExpr = sciExpr.replace(/Math\.PI/g,'π').replace(/Math\.E/g,'e').replace(/\*\*/g,'^');
+        addSciHistory(niceExpr, res);
+        document.getElementById('sci-res').textContent = res;
+        document.getElementById('sci-expr').textContent = niceExpr + " =";
+        sciExpr = String(res);
+      } catch(e) { document.getElementById('sci-res').textContent = "Error"; }
+    }
+
+    function calcSci(f) {
+      let cur = parseFloat(document.getElementById('sci-res').textContent);
+      if(isNaN(cur)) return;
+      let res, label;
+      switch(f) {
+        case 'sin': res = (angleMode==='deg'?Math.sin(cur*Math.PI/180):Math.sin(cur)); label=`sin(${cur})`; break;
+        case 'cos': res = (angleMode==='deg'?Math.cos(cur*Math.PI/180):Math.cos(cur)); label=`cos(${cur})`; break;
+        case 'tan': res = (angleMode==='deg'?Math.tan(cur*Math.PI/180):Math.tan(cur)); label=`tan(${cur})`; break;
+        case 'sqrt': res = Math.sqrt(cur); label=`√(${cur})`; break;
+        case 'log': res = Math.log10(cur); label=`log(${cur})`; break;
+        case 'ln': res = Math.log(cur); label=`ln(${cur})`; break;
+        case 'sq': res = cur*cur; label=`${cur}²`; break;
+        case 'inv': res = 1/cur; label=`1/${cur}`; break;
+        case 'abs': res = Math.abs(cur); label=`|${cur}|`; break;
+        case 'fact': res=1; for(let i=2;i<=cur;i++) res*=i; label=`${cur}!`; break;
+        case 'prime': let p=cur>1; for(let i=2;i*i<=cur;i++) if(cur%i===0) p=false; document.getElementById('sci-res').textContent = p?"PRIME":"NOT PRIME"; return;
+      }
+      res = parseFloat(res.toFixed(10)); addSciHistory(label, res);
+      document.getElementById('sci-res').textContent = res; sciExpr = String(res);
+    }
+
+    function addSciHistory(e, r) { 
+      sciHistory.unshift({e, r}); 
+      if(sciHistory.length>5) sciHistory.pop(); 
+      localStorage.setItem('sciHistory', JSON.stringify(sciHistory)); 
+      updateSciHistory(); 
+    }
+    function updateSciHistory() { document.getElementById('sci-history').innerHTML = sciHistory.map(i => `<div class="history-item">${i.e} = <strong>${i.r}</strong></div>`).join(''); }
+
+    // --- FRACTION LOGIC ---
+    let fracOp = '+';
+    function setFracOp(op) { fracOp = op; liveUpdateFrac(); }
+    function gcd(a, b) { a=Math.abs(a); b=Math.abs(b); while(b){let t=b; b=a%b; a=t;} return a; }
+    function simplify(n, d) { let g=gcd(n,d); if(d<0){n=-n; d=-d;} return { n: n/g, d: d/g }; }
+    function getF(p) {
+      let w=parseInt(document.getElementById(`f-${p}-w`).value)||0, n=parseInt(document.getElementById(`f-${p}-n`).value)||0, d=parseInt(document.getElementById(`f-${p}-d`).value)||1;
+      return simplify(Math.abs(w)*d + n * (w<0?-1:1), d);
+    }
+    function calcFraction() {
+      let A=getF('a'), B=getF('b'), rn, rd;
+      if(fracOp==='+'){rn=A.n*B.d+B.n*A.d; rd=A.d*B.d;}
+      else if(fracOp==='-'){rn=A.n*B.d-B.n*A.d; rd=A.d*B.d;}
+      else if(fracOp==='*'){rn=A.n*B.n; rd=A.d*B.d;}
+      else {rn=A.n*B.d; rd=A.d*B.n;}
+      let res = simplify(rn, rd);
+      const formatVisual = (f) => {
+        let w=Math.trunc(f.n/f.d), n=Math.abs(f.n%f.d);
+        return `<div style="display:inline-flex; align-items:center;">${w?`<span>${w}</span>`:(n?'':'<span>0</span>')}${n?`<div style="display:flex; flex-direction:column; align-items:center; margin-left:5px;"><span style="border-bottom:2px solid #333; padding:0 3px;">${n}</span><span>${f.d}</span></div>`:''}</div>`;
+      };
+      let opSym = fracOp === '*' ? '×' : (fracOp === '/' ? '÷' : (fracOp === '-' ? '−' : '+'));
+      document.getElementById('frac-visual-res').innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:15px; flex-wrap:wrap;">${formatVisual(A)} <span style="font-size:1.5rem; color:#555;">${opSym}</span> ${formatVisual(B)} <span style="font-size:1.5rem; color:#b22222;">=</span> <div style="color:#b22222;">${formatVisual(res)}</div></div>`;
+      document.getElementById('frac-dec-res').textContent = `≈ ${(res.n/res.d).toFixed(6)}`;
+      const lesson = document.getElementById('frac-lesson');
+      lesson.innerHTML = `<div class='lesson-title'>Step-by-Step</div><strong>Simplified Result: ${res.n}/${res.d}</strong>`;
+      lesson.classList.add('visible');
+    }
+    function swapFractions() { ['w','n','d'].forEach(s=>{ let a=document.getElementById('f-a-'+s), b=document.getElementById('f-b-'+s), t=a.value; a.value=b.value; b.value=t; }); liveUpdateFrac(); }
+    function clearFraction() { ['f-a-w','f-a-n','f-a-d','f-b-w','f-b-n','f-b-d'].forEach(id => document.getElementById(id).value = ''); document.getElementById('frac-visual-res').innerHTML = 'Enter Fractions Below'; document.getElementById('frac-dec-res').textContent = ''; const lesson = document.getElementById('frac-lesson'); lesson.innerHTML = ''; lesson.classList.remove('visible'); }
+
+    // --- COLUMN MATH LOGIC ---
+    function addC(g,r,c,v,cls) { const el=document.createElement('div'); el.className='cell '+(cls||''); el.style.gridRow=r+1; el.style.gridColumn=c+1; el.textContent=v; g.appendChild(el); }
+    function solveColumnMath() {
+      const n1=document.getElementById('cm-n1').value, n2=document.getElementById('cm-n2').value, op=document.getElementById('cm-op').value;
+      const g=document.getElementById('cm-grid'), l=document.getElementById('cm-lesson');
+      if(!n1 || !n2) return; g.innerHTML = ""; l.innerHTML = ""; l.className = "lesson-box visible";
+      document.getElementById('cm-placeholder').style.display = 'none';
+      if(op==='/') { solveLongDivision(n1, n2, g, l); return; }
+      if(op==='*') { solveLongMultiplication(n1, n2, g, l); return; }
+      const s1=n1.toString(), s2=n2.toString(), len=Math.max(s1.length, s2.length), sc=6;
+      for(let i=0;i<s1.length;i++) addC(g,1,sc+len-s1.length+i,s1[i]);
+      addC(g,2,sc-1,op);
+      for(let i=0;i<s2.length;i++) addC(g,2,sc+len-s2.length+i,s2[i]);
+      let ln = document.createElement('div'); ln.className='sub-line'; ln.style.gridRow="3"; ln.style.gridColumn=`${sc}/span ${len+1}`; g.appendChild(ln);
+      let res = (op==='+'?parseInt(n1)+parseInt(n2):parseInt(n1)-parseInt(n2)), rs=res.toString();
+      for(let i=0;i<rs.length;i++) addC(g,3,sc+len-rs.length+i,rs[i],'cm-res');
+      if(op==='+') {
+        let c=0; for(let i=0;i<len;i++){
+          let d1=parseInt(s1[s1.length-1-i]||0), d2=parseInt(s2[s2.length-1-i]||0), sum=d1+d2+c;
+          if(sum>=10){c=1; addC(g,0,sc+len-1-i,'1','cm-carry');} else c=0;
+        }
+      }
+    }
+    function solveLongMultiplication(n1, n2, g, l) {
+      const s1=n1.toString(), s2=n2.toString(), sc=10, len=s1.length+s2.length;
+      for(let i=0;i<s1.length;i++) addC(g,1,sc+len-s1.length+i,s1[i]);
+      addC(g,2,sc+len-s2.length-1,'×');
+      for(let i=0; i<s2.length; i++) addC(g,2,sc+len-s2.length+i,s2[i]);
+      let row=3; let ln=document.createElement('div'); ln.className='sub-line'; ln.style.gridRow=row; ln.style.gridColumn=`${sc}/span ${len+2}`; g.appendChild(ln);
+      row++;
+      for(let i=0;i<s2.length;i++){
+        let digit=parseInt(s2[s2.length-1-i]), part=digit*parseInt(n1), ps=part.toString();
+        for(let j=0;j<ps.length;j++) addC(g,row,sc+len-ps.length-i+j,ps[j]);
+        for(let j=0;j<i;j++) addC(g,row,sc+len-i+j,'0','text-dim');
+        row++;
+      }
+      if(s2.length>1){
+        let ln2=document.createElement('div'); ln2.className='sub-line'; ln2.style.gridRow=row; ln2.style.gridColumn=`${sc}/span ${len+2}`; g.appendChild(ln2);
+        row++; let f=parseInt(n1)*parseInt(n2), fs=f.toString();
+        for(let i=0;i<fs.length;i++) addC(g,row,sc+len-fs.length+i,fs[i],'cm-res');
+      }
+    }
+    function solveLongDivision(n1, n2, g, l) {
+      let div=n1.toString(), sor=parseInt(n2), sc=n2.length+1;
+      for(let i=0;i<n2.length;i++) addC(g,1,i,n2[i]);
+      addC(g,1,n2.length,'','ld-bracket-side');
+      for(let i=0;i<div.length;i++) addC(g,1,sc+i,div[i],'ld-bracket-top');
+      let rem=0, row=2;
+      for(let i=0;i<div.length;i++){
+        rem=rem*10+parseInt(div[i]); let q=Math.floor(rem/sor);
+        addC(g,0,sc+i,q,'ld-quotient');
+        if(q>0||row>2){
+          let mult=q*sor, ms=mult.toString();
+          for(let j=0;j<ms.length;j++) addC(g,row,sc+i-(ms.length-1-j),ms[j]);
+          row++; let ln=document.createElement('div'); ln.className='sub-line'; ln.style.gridRow=row; ln.style.gridColumn=`${sc}/span ${div.length}`; g.appendChild(ln);
+          row++; rem-=mult; let rs=rem.toString();
+          for(let j=0;j<rs.length;j++) addC(g,row,sc+i-(rs.length-1-j),rs[j]);
+          row++;
+        }
+      }
+    }
+
+    // --- ADVANCED PARSER LOGIC (Shunting-yard) ---
+    let advExpr = "";
+    function insertAdv(c) { advExpr += c; liveUpdateAdv(); }
+    function clearAdv() { advExpr = ""; liveUpdateAdv(); document.getElementById('adv-res').textContent = "0"; }
+    function backspaceAdv() { advExpr = advExpr.slice(0, -1); liveUpdateAdv(); }
+
+    function liveUpdateAdv() {
+      const infixEl = document.getElementById('adv-infix');
+      const postfixEl = document.getElementById('adv-postfix');
+      if (!infixEl || !postfixEl) return;
+      infixEl.textContent = advExpr.replace(/\*/g, '×').replace(/\//g, '÷');
+      
+      try {
+        if (advExpr.trim() === "") {
+          postfixEl.textContent = "";
+          return;
+        }
+        const tokens = tokenize(advExpr);
+        const postfix = shuntingYard(tokens);
+        postfixEl.textContent = postfix.join(" ");
+      } catch (e) {
+        postfixEl.textContent = "...";
+      }
+    }
+
+    function calculateAdv() {
+      if (advExpr.trim() === "") return;
+      try {
+        const tokens = tokenize(advExpr);
+        const postfix = shuntingYard(tokens);
+        const result = evaluateRPN(postfix);
+        if (result === undefined || isNaN(result)) throw "err";
+        document.getElementById('adv-res').textContent = parseFloat(result.toFixed(10));
+      } catch (e) {
+        document.getElementById('adv-res').textContent = "Error";
+      }
+    }
+
+    function tokenize(str) {
+      const tokens = [];
+      const regex = /\d+\.\d+|\d+|[a-z]+|\+|\-|\*|\/|\^|\(|\)|\,|\pi|e|tau|phi/g;
+      let m;
+      while ((m = regex.exec(str)) !== null) {
+        tokens.push(m[0]);
+      }
+      return tokens;
+    }
+
+    function shuntingYard(tokens) {
+      const outputQueue = [];
+      const operatorStack = [];
+      const operators = {
+        '^': { prec: 4, assoc: 'R' },
+        '*': { prec: 3, assoc: 'L' },
+        '/': { prec: 3, assoc: 'L' },
+        '+': { prec: 2, assoc: 'L' },
+        '-': { prec: 2, assoc: 'L' }
+      };
+      const functions = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'abs', 'fact'];
+
+      tokens.forEach(token => {
+        if (!isNaN(token)) {
+          outputQueue.push(token);
+        } else if (['pi', 'e', 'tau', 'phi'].includes(token)) {
+          outputQueue.push(token); // Keep name for display, value in eval
+        } else if (functions.includes(token)) {
+          operatorStack.push(token);
+        } else if (token === '(') {
+          operatorStack.push(token);
+        } else if (token === ')') {
+          while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
+            outputQueue.push(operatorStack.pop());
+          }
+          operatorStack.pop(); // Remove '('
+          if (operatorStack.length > 0 && functions.includes(operatorStack[operatorStack.length - 1])) {
+            outputQueue.push(operatorStack.pop());
+          }
+        } else if (operators[token]) {
+          const o1 = token;
+          while (operatorStack.length > 0) {
+            const o2 = operatorStack[operatorStack.length - 1];
+            if (!operators[o2]) break;
+            if ((operators[o1].assoc === 'L' && operators[o1].prec <= operators[o2].prec) ||
+                (operators[o1].assoc === 'R' && operators[o1].prec < operators[o2].prec)) {
+              outputQueue.push(operatorStack.pop());
+            } else {
+              break;
+            }
+          }
+          operatorStack.push(o1);
+        }
+      });
+
+      while (operatorStack.length > 0) {
+        outputQueue.push(operatorStack.pop());
+      }
+      return outputQueue;
+    }
+
+    function evaluateRPN(postfix) {
+      const stack = [];
+      const constants = { 
+        pi: Math.PI, e: Math.E, tau: Math.PI * 2, phi: (1 + Math.sqrt(5)) / 2 
+      };
+
+      postfix.forEach(token => {
+        if (!isNaN(token)) {
+          stack.push(parseFloat(token));
+        } else if (constants[token]) {
+          stack.push(constants[token]);
+        } else {
+          const ops = {
+            '+': (a, b) => a + b,
+            '-': (a, b) => a - b,
+            '*': (a, b) => a * b,
+            '/': (a, b) => a / b,
+            '^': (a, b) => Math.pow(a, b)
+          };
+          const funcs = {
+            'sin': (a) => (angleMode === 'deg' ? Math.sin(a * Math.PI / 180) : Math.sin(a)),
+            'cos': (a) => (angleMode === 'deg' ? Math.cos(a * Math.PI / 180) : Math.cos(a)),
+            'tan': (a) => (angleMode === 'deg' ? Math.tan(a * Math.PI / 180) : Math.tan(a)),
+            'sqrt': (a) => Math.sqrt(a),
+            'log': (a) => Math.log10(a),
+            'ln': (a) => Math.log(a),
+            'abs': (a) => Math.abs(a),
+            'fact': (a) => { let r = 1; for (let i = 2; i <= a; i++) r *= i; return r; }
+          };
+
+          if (ops[token]) {
+            const b = stack.pop();
+            const a = stack.pop();
+            stack.push(ops[token](a, b));
+          } else if (funcs[token]) {
+            const a = stack.pop();
+            stack.push(funcs[token](a));
+          }
+        }
+      });
+      return stack[0];
+    }
+  </script>
+</body>
+</html>
