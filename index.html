@@ -213,6 +213,23 @@
       body.print-history-only .history-item strong {
         color: #b22222 !important;
       }
+
+      /* Stats PDF Export */
+      body.print-stats-only * { visibility: hidden !important; }
+      body.print-stats-only .stats-export-area, 
+      body.print-stats-only .stats-export-area * { 
+        visibility: visible !important; 
+        display: block !important; 
+      }
+      body.print-stats-only .stats-export-area { 
+        display: flex !important;
+        position: fixed !important;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: white !important;
+        z-index: 99999;
+        padding: 40px !important;
+        max-height: none !important;
+      }
     }
   </style>
 </head>
@@ -626,13 +643,22 @@
 
     <!-- STATS PANEL -->
     <div class="panel" id="panel-stats">
-      <div class="ld-input-row" style="flex-direction: column;">
-        <span style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 5px;">Enter numbers separated by commas:</span>
+      <div class="ld-input-row" style="flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <span style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Data Input (comma separated)</span>
+          <div style="display: flex; gap: 5px;">
+            <select id="stats-graph-type" class="ld-input" style="padding: 4px 8px; font-size: 0.7rem; flex: none; width: auto;" onchange="calcStats()">
+              <option value="bar">📊 Bar Chart</option>
+              <option value="line">📈 Line Graph</option>
+            </select>
+            <button onclick="saveStatsPDF()" style="background: var(--btn-special-bg); color: var(--btn-special-text); border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 700;">📄 PDF</button>
+          </div>
+        </div>
         <input class="ld-input" type="text" id="stats-input" placeholder="e.g. 10, 20, 15, 30" oninput="calcStats()">
       </div>
-      <div class="display" style="min-height: 250px; background: white; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px;">
-        <canvas id="stats-canvas" width="400" height="150" style="width: 100%; height: 150px; border-bottom: 2px solid #333;"></canvas>
-        <div id="stats-results" style="width: 100%; margin-top: 10px; font-family: monospace; font-size: 0.85rem; color: #333; text-align: left;"></div>
+      <div class="display stats-export-area" style="min-height: 250px; background: white; flex-direction: column; justify-content: flex-start; align-items: center; padding: 15px;">
+        <canvas id="stats-canvas" width="400" height="150" style="width: 100%; height: 150px; border-bottom: 2px solid #333; margin-bottom: 10px;"></canvas>
+        <div id="stats-results" style="width: 100%; font-family: monospace; font-size: 0.85rem; color: #333; text-align: left; line-height: 1.5;"></div>
       </div>
       <div class="keypad" style="margin-top: 15px;">
         <button class="btn-num" onclick="keypadTypeStats('7')">7</button><button class="btn-num" onclick="keypadTypeStats('8')">8</button><button class="btn-num" onclick="keypadTypeStats('9')">9</button>
@@ -1395,6 +1421,7 @@
 
     function calcStats() {
       const input = document.getElementById('stats-input').value;
+      const graphType = document.getElementById('stats-graph-type').value;
       const nums = input.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
       const results = document.getElementById('stats-results');
       const lesson = document.getElementById('stats-lesson');
@@ -1403,6 +1430,7 @@
       
       if (nums.length === 0) { results.innerHTML = ""; ctx.clearRect(0,0,400,150); return; }
       
+      const rawNums = [...nums];
       nums.sort((a,b) => a-b);
       const sum = nums.reduce((a,b) => a+b, 0);
       const mean = sum / nums.length;
@@ -1411,24 +1439,51 @@
       
       results.innerHTML = `
         <strong>Count:</strong> ${nums.length} &nbsp; <strong>Sum:</strong> ${sum}<br>
-        <strong>Mean (Avg):</strong> ${mean.toFixed(2)}<br>
-        <strong>Median:</strong> ${median}<br>
-        <strong>Min/Max:</strong> ${nums[0]} / ${nums[nums.length-1]}<br>
-        <strong>Range:</strong> ${range}
+        <strong>Mean (Avg):</strong> ${mean.toFixed(2)} &nbsp; <strong>Median:</strong> ${median}<br>
+        <strong>Min / Max:</strong> ${nums[0]} / ${nums[nums.length-1]} &nbsp; <strong>Range:</strong> ${range}
       `;
       
-      // Simple Bar Chart
       ctx.clearRect(0,0,400,150);
-      const max = Math.max(...nums);
-      const barWidth = (400 / nums.length) - 4;
-      nums.forEach((n, i) => {
-        const h = (n / max) * 120;
-        ctx.fillStyle = "#b22222";
-        ctx.fillRect(i * (barWidth + 4), 150 - h, barWidth, h);
-      });
+      const max = Math.max(...rawNums, 1); // Avoid div by zero
+      
+      if (graphType === 'bar') {
+        const barWidth = (400 / rawNums.length) - 4;
+        rawNums.forEach((n, i) => {
+          const h = (n / max) * 120;
+          ctx.fillStyle = "#b22222";
+          ctx.fillRect(i * (barWidth + 4), 150 - h, barWidth, h);
+        });
+      } else {
+        ctx.strokeStyle = "#0055aa";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        const step = 400 / (rawNums.length > 1 ? rawNums.length - 1 : 1);
+        rawNums.forEach((n, i) => {
+          const x = i * (rawNums.length > 1 ? step : 200);
+          const y = 150 - (n / max) * 120;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        // Points
+        rawNums.forEach((n, i) => {
+          const x = i * (rawNums.length > 1 ? step : 200);
+          const y = 150 - (n / max) * 120;
+          ctx.fillStyle = "#b22222";
+          ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+        });
+      }
       
       lesson.innerHTML = `<div class="lesson-title">Stats breakdown</div>1. Sorted list: [${nums.join(', ')}]<br>2. Mean = ${sum}/${nums.length} = ${mean.toFixed(2)}`;
       lesson.classList.add('visible');
+    }
+
+    function saveStatsPDF() {
+      const input = document.getElementById('stats-input').value;
+      if (!input.trim()) { alert("Please enter some data first!"); return; }
+      document.body.classList.add('print-stats-only');
+      window.print();
+      document.body.classList.remove('print-stats-only');
     }
 
     // --- THEME LOGIC ---
