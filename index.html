@@ -592,7 +592,16 @@
           <text id="geom-label-2" x="0" y="25" text-anchor="middle" font-size="12" fill="#333" font-weight="bold"></text>
         </svg>
       </div>
-      <button class="btn-eq" style="width:100%; padding:15px;" onclick="calcGeometry()">Calculate Area & Perimeter</button>
+      <div class="keypad" style="margin-top: 15px;">
+        <button class="btn-num" onclick="keypadTypeGeom('7')">7</button><button class="btn-num" onclick="keypadTypeGeom('8')">8</button><button class="btn-num" onclick="keypadTypeGeom('9')">9</button>
+        <button class="btn-num" onclick="keypadTypeGeom('4')">4</button><button class="btn-num" onclick="keypadTypeGeom('5')">5</button><button class="btn-num" onclick="keypadTypeGeom('6')">6</button>
+        <button class="btn-num" onclick="keypadTypeGeom('1')">1</button><button class="btn-num" onclick="keypadTypeGeom('2')">2</button><button class="btn-num" onclick="keypadTypeGeom('3')">3</button>
+        <button class="btn-clear" style="background:#ff4757; color:#fff" onclick="keypadTypeGeom('AC')">AC</button>
+        <button class="btn-num" onclick="keypadTypeGeom('0')">0</button>
+        <button class="btn-num" onclick="keypadTypeGeom('.')">.</button>
+        <button class="btn-clear" onclick="keypadTypeGeom('B')">⌫</button>
+      </div>
+      <button class="btn-eq" style="width:100%; padding:15px; margin-top:15px;" onclick="calcGeometry()">Calculate Area & Perimeter</button>
       <div class="lesson-box" id="geom-lesson"></div>
     </div>
 
@@ -603,6 +612,14 @@
       </div>
       <div class="display" style="min-height: 250px; background: white; justify-content: flex-start; align-items: center; padding-top: 20px;">
         <div id="fact-tree" style="width: 100%; color: #333;"></div>
+      </div>
+      <div class="keypad" style="margin-top: 15px;">
+        <button class="btn-num" onclick="keypadTypeFactors('7')">7</button><button class="btn-num" onclick="keypadTypeFactors('8')">8</button><button class="btn-num" onclick="keypadTypeFactors('9')">9</button>
+        <button class="btn-num" onclick="keypadTypeFactors('4')">4</button><button class="btn-num" onclick="keypadTypeFactors('5')">5</button><button class="btn-num" onclick="keypadTypeFactors('6')">6</button>
+        <button class="btn-num" onclick="keypadTypeFactors('1')">1</button><button class="btn-num" onclick="keypadTypeFactors('2')">2</button><button class="btn-num" onclick="keypadTypeFactors('3')">3</button>
+        <button class="btn-clear" style="background:#ff4757; color:#fff" onclick="keypadTypeFactors('AC')">AC</button>
+        <button class="btn-num" onclick="keypadTypeFactors('0')">0</button>
+        <button class="btn-clear" onclick="keypadTypeFactors('B')">⌫</button>
       </div>
       <div class="lesson-box" id="fact-lesson"></div>
     </div>
@@ -616,6 +633,15 @@
       <div class="display" style="min-height: 250px; background: white; flex-direction: column; justify-content: flex-start; align-items: center; padding: 10px;">
         <canvas id="stats-canvas" width="400" height="150" style="width: 100%; height: 150px; border-bottom: 2px solid #333;"></canvas>
         <div id="stats-results" style="width: 100%; margin-top: 10px; font-family: monospace; font-size: 0.85rem; color: #333; text-align: left;"></div>
+      </div>
+      <div class="keypad" style="margin-top: 15px;">
+        <button class="btn-num" onclick="keypadTypeStats('7')">7</button><button class="btn-num" onclick="keypadTypeStats('8')">8</button><button class="btn-num" onclick="keypadTypeStats('9')">9</button>
+        <button class="btn-num" onclick="keypadTypeStats('4')">4</button><button class="btn-num" onclick="keypadTypeStats('5')">5</button><button class="btn-num" onclick="keypadTypeStats('6')">6</button>
+        <button class="btn-num" onclick="keypadTypeStats('1')">1</button><button class="btn-num" onclick="keypadTypeStats('2')">2</button><button class="btn-num" onclick="keypadTypeStats('3')">3</button>
+        <button class="btn-clear" style="background:#ff4757; color:#fff" onclick="keypadTypeStats('AC')">AC</button>
+        <button class="btn-num" onclick="keypadTypeStats('0')">0</button>
+        <button class="btn-num" onclick="keypadTypeStats(',')">,</button>
+        <button class="btn-clear" onclick="keypadTypeStats('B')">⌫</button>
       </div>
       <div class="lesson-box" id="stats-lesson"></div>
     </div>
@@ -1231,6 +1257,26 @@
     }
 
     // --- GEOMETRY LOGIC ---
+    let activeGeomInput = null;
+    function setActiveGeom(el) { activeGeomInput = el; }
+
+    function keypadTypeGeom(key) {
+      if (key === 'AC') {
+        const inputs = document.querySelectorAll('#geom-inputs input');
+        inputs.forEach(i => i.value = "");
+        document.getElementById('geom-lesson').innerHTML = "";
+        document.getElementById('geom-lesson').classList.remove('visible');
+        document.getElementById('geom-label-1').textContent = "";
+        document.getElementById('geom-label-2').textContent = "";
+        return;
+      }
+      if (!activeGeomInput) activeGeomInput = document.querySelector('#geom-inputs input');
+      if (!activeGeomInput) return;
+      if (key === 'B') activeGeomInput.value = activeGeomInput.value.slice(0, -1);
+      else activeGeomInput.value += key;
+      calcGeometry();
+    }
+
     function updateGeomUI() {
       const shape = document.getElementById('geom-shape').value;
       const container = document.getElementById('geom-inputs');
@@ -1243,9 +1289,9 @@
       tri.style.display = shape === 'triangle' ? 'block' : 'none';
       
       let html = "";
-      if (shape === 'circle') html = '<input class="ld-input" type="number" id="geom-val-1" placeholder="Radius (r)" oninput="calcGeometry()">';
-      else if (shape === 'rectangle') html = '<input class="ld-input" type="number" id="geom-val-1" placeholder="Length (L)" oninput="calcGeometry()"><input class="ld-input" type="number" id="geom-val-2" placeholder="Width (W)" oninput="calcGeometry()">';
-      else if (shape === 'triangle') html = '<input class="ld-input" type="number" id="geom-val-1" placeholder="Base (b)" oninput="calcGeometry()"><input class="ld-input" type="number" id="geom-val-2" placeholder="Height (h)" oninput="calcGeometry()">';
+      if (shape === 'circle') html = '<input class="ld-input" type="number" id="geom-val-1" placeholder="Radius (r)" onfocus="setActiveGeom(this)" oninput="calcGeometry()">';
+      else if (shape === 'rectangle') html = '<input class="ld-input" type="number" id="geom-val-1" placeholder="Length (L)" onfocus="setActiveGeom(this)" oninput="calcGeometry()"><input class="ld-input" type="number" id="geom-val-2" placeholder="Width (W)" onfocus="setActiveGeom(this)" oninput="calcGeometry()">';
+      else if (shape === 'triangle') html = '<input class="ld-input" type="number" id="geom-val-1" placeholder="Base (b)" onfocus="setActiveGeom(this)" oninput="calcGeometry()"><input class="ld-input" type="number" id="geom-val-2" placeholder="Height (h)" onfocus="setActiveGeom(this)" oninput="calcGeometry()">';
       
       container.innerHTML = html;
       document.getElementById('geom-label-1').textContent = "";
@@ -1282,6 +1328,20 @@
     }
 
     // --- FACTOR TREE LOGIC ---
+    function keypadTypeFactors(key) {
+      const input = document.getElementById('fact-input');
+      if (key === 'AC') {
+        input.value = "";
+        document.getElementById('fact-tree').innerHTML = "";
+        document.getElementById('fact-lesson').innerHTML = "";
+        document.getElementById('fact-lesson').classList.remove('visible');
+        return;
+      }
+      if (key === 'B') input.value = input.value.slice(0, -1);
+      else input.value += key;
+      drawFactorTree();
+    }
+
     function drawFactorTree() {
       const n = parseInt(document.getElementById('fact-input').value);
       const tree = document.getElementById('fact-tree');
@@ -1316,6 +1376,23 @@
     }
 
     // --- STATS LOGIC ---
+    function keypadTypeStats(key) {
+      const input = document.getElementById('stats-input');
+      if (key === 'AC') {
+        input.value = "";
+        document.getElementById('stats-results').innerHTML = "";
+        document.getElementById('stats-lesson').innerHTML = "";
+        document.getElementById('stats-lesson').classList.remove('visible');
+        const canvas = document.getElementById('stats-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        return;
+      }
+      if (key === 'B') input.value = input.value.slice(0, -1);
+      else input.value += key;
+      calcStats();
+    }
+
     function calcStats() {
       const input = document.getElementById('stats-input').value;
       const nums = input.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
