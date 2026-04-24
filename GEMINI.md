@@ -5,35 +5,29 @@ An interactive, single-file pedagogical math tool designed for students and educ
 
 ## Architecture
 - **Single-File App**: All HTML, CSS, and JavaScript are contained within `index.html`.
-- **Zero Dependencies**: Pure Vanilla JS, CSS3, and HTML5. No external libraries (e.g., MathJax, Chart.js) are used to maintain portability and simplicity.
-- **Dropdown Navigation**: Features a single dropdown menu to switch between specialized panels (Scientific, Fractions, Column Math, Trig, Grapher, Solver, Base Converter, Advanced Parser, Powers).
+- **Zero Dependencies**: Pure Vanilla JS, CSS3, and HTML5. No external libraries are used to maintain portability.
+- **Dropdown Navigation**: Features a single dropdown menu to switch between specialized panels.
+- **Theme Support**: Includes "Dark Mode" and "Paper Mode" (Classic school notebook aesthetic).
 
 ## Structural Breakdown of `index.html`
-1. **HTML Body**: Dropdown navigation menu followed by the main `.calculator` container housing individual `.panel` elements.
+1. **HTML Body**: Header with Theme Toggle, Dropdown navigation, and the main `.calculator` container.
 2. **CSS (`<style>`)**:
-   - Uses CSS Variables (`:root`) for colors and themes.
-   - Fixed width (`520px`) for the main container.
-   - Custom grid-based background for the "Notebook" display.
-   - Media queries for print-ready formatting (hides dropdown and buttons).
+   - Uses CSS Variables (`:root` and `.light-theme`) for dual-theme support.
+   - Print-ready media queries for exporting solutions.
 3. **JavaScript (`<script>`)**:
-   - **Tab Logic**: Simple `switchTab` function triggered by dropdown `onchange`.
-   - **Shunting-Yard Parser**: Converts infix to postfix and evaluates.
-   - **Pedagogical Solvers**: Logic for generating visual grids (Column Math) and text explanations (Equation Solver).
-   - **Visualizations**: SVG for the Unit Circle and Canvas for the Grapher.
+   - **Shunting-Yard Parser**: For scientific and advanced calculations.
+   - **Geometry Engine**: SVG-based shape visualization.
+   - **Factor Tree**: Recursive prime factorization logic.
+   - **Stats Engine**: Basic data analysis and Canvas-based bar charts.
 
 ## Coding Conventions & Guidelines
-- **Maintain Single-File Integrity**: Keep all logic, styles, and markup in `index.html` unless a transition to a multi-file structure is explicitly requested.
-- **Styling**: Always use the defined CSS variables (`--calc-bg`, `--text-main`, etc.) for consistency. Avoid hardcoding colors in JavaScript; prefer applying classes or using variables.
-- **Pedagogy First**: When adding or modifying features, prioritize clear, step-by-step visual explanations.
-- **Safety**: Be cautious with the `eval()` function currently used in the scientific calculator section. If refactoring, consider moving towards the Shunting-Yard parser.
-- **Naming**:
-  - CSS Classes: `btn-*` for buttons, `panel-*` for containers, `ld-*` for long division elements.
-  - IDs: Use descriptive prefixes like `sci-`, `frac-`, `cm-`, `trig-`, `solve-`.
-- **Interactive Elements**: Buttons often use inline `onclick` handlers. Maintain this pattern for existing features, or refactor all to event listeners if requested.
+- **Maintain Single-File Integrity**: Keep all logic, styles, and markup in `index.html`.
+- **Styling**: Always use the defined CSS variables for theme compatibility.
+- **Pedagogy First**: Prioritize clear, step-by-step visual explanations.
 
 ## Common Tasks
 - **Adding a Section**:
   1. Add an `<option value="yourname">Text</option>` to the `.tab-select` dropdown.
   2. Create a `<div class="panel" id="panel-yourname">` inside `.calculator`.
   3. Implement the logic in a new section in the `<script>` tag.
-- **Updating Visuals**: Update the `:root` variables in the CSS section.
+- **Updating Themes**: Modify the `:root` or `.light-theme` variables in the CSS section.
