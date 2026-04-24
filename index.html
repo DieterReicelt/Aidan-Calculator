@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pedagogical Math Notebook</title>
+  <meta name="description" content="An interactive Pedagogical Math Notebook featuring a Shunting-yard parser, function grapher, equation solver, and unit circle visualization."/>
+  <meta name="keywords" content="math, calculator, trigonometry, shunting-yard, algorithm, education, grapher, solver"/>
+  <meta name="author" content="Math Notebook Project"/>
+  <title>Math Notebook | Advanced Pedagogical Calculator</title>
 
   <style>
     /* =============================================
@@ -46,10 +49,10 @@
     h1 { color: #e0e0e0; font-size: 1.1rem; margin-bottom: 12px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
 
     /* ---- TAB BAR ---- */
-    .tab-bar { display: flex; width: 520px; max-width: 95%; margin-bottom: -1px; gap: 4px; }
+    .tab-bar { display: flex; width: 520px; max-width: 95%; margin-bottom: -1px; gap: 4px; flex-wrap: wrap; justify-content: center; }
     .tab-btn {
-      flex: 1; padding: 12px 5px; border: none; border-radius: 12px 12px 0 0; font-size: 0.8rem; font-weight: 700; cursor: pointer;
-      background: #13132a; color: #5566aa; transition: all 0.2s;
+      flex: 1 1 100px; padding: 10px 5px; border: none; border-radius: 12px 12px 0 0; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+      background: #13132a; color: #5566aa; transition: all 0.2s; margin-bottom: 2px;
     }
     .tab-btn.active { background: #1e1e2e; color: #a0c4ff; }
 
@@ -162,13 +165,68 @@
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('scientific')">🧮 Scientific</button>
     <button class="tab-btn"        onclick="switchTab('advanced')">🧠 Advanced</button>
+    <button class="tab-btn"        onclick="switchTab('trig')">📐 Trig</button>
+    <button class="tab-btn"        onclick="switchTab('graph')">📈 Graph</button>
+    <button class="tab-btn"        onclick="switchTab('solve')">⚖️ Solve</button>
+    <button class="tab-btn"        onclick="switchTab('base')">🔢 Base</button>
     <button class="tab-btn"        onclick="switchTab('fraction')">½ Fractions</button>
     <button class="tab-btn"        onclick="switchTab('column')">📏 Column Math</button>
+    <button class="tab-btn"        onclick="switchTab('powers')">⚡ Powers</button>
   </div>
 
   <div class="calculator">
 
     <!-- SCIENTIFIC PANEL -->
+...
+    <!-- TRIGONOMETRY PANEL -->
+    <div class="panel" id="panel-trig">
+      <div class="display" style="justify-content: flex-start; text-align: center; min-height: 280px; padding: 15px;">
+        <!-- Visual Unit Circle -->
+        <svg viewBox="-60 -60 120 120" style="width: 180px; height: 180px; margin: 0 auto;">
+          <!-- Axes -->
+          <line x1="-55" y1="0" x2="55" y2="0" stroke="#ccc" stroke-width="1" />
+          <line x1="0" y1="-55" x2="0" y2="55" stroke="#ccc" stroke-width="1" />
+          <!-- Circle -->
+          <circle cx="0" cy="0" r="50" fill="none" stroke="#888" stroke-width="2" />
+          <!-- Components -->
+          <line id="trig-line-cos" x1="0" y1="0" x2="50" y2="0" stroke="#4a90d9" stroke-width="3" />
+          <line id="trig-line-sin" x1="50" y1="0" x2="50" y2="0" stroke="#b22222" stroke-width="3" />
+          <line id="trig-line-hyp" x1="0" y1="0" x2="50" y2="0" stroke="#333" stroke-width="2" />
+          <circle id="trig-point" cx="50" cy="0" r="4" fill="#333" />
+        </svg>
+        
+        <div id="trig-basic-res" style="margin-top: 10px; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #333;">
+          sin: <span id="t-res-sin">0.00</span> | cos: <span id="t-res-cos">1.00</span> | tan: <span id="t-res-tan">0.00</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 12px; margin-top: 10px;">
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 8px;">Angle Input</div>
+        <div class="ld-input-row">
+          <input class="ld-input" type="number" id="trig-angle" value="0" oninput="updateTrig()" style="flex: 2;">
+          <select class="ld-input" id="trig-unit" onchange="updateTrig()" style="flex: 1;">
+            <option value="deg">DEG</option>
+            <option value="rad">RAD</option>
+          </select>
+        </div>
+
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin: 12px 0 8px;">Coordinate Conversion</div>
+        <div class="ld-input-row">
+          <input class="ld-input" type="number" id="coord-x" placeholder="X" oninput="rectToPolar()">
+          <input class="ld-input" type="number" id="coord-y" placeholder="Y" oninput="rectToPolar()">
+          <div style="display: flex; align-items: center; color: #888;">⇄</div>
+          <input class="ld-input" type="number" id="coord-r" placeholder="r" oninput="polarToRect()">
+          <input class="ld-input" type="number" id="coord-theta" placeholder="θ°" oninput="polarToRect()">
+        </div>
+      </div>
+
+      <div class="lesson-box visible" style="margin-top: 15px; font-size: 0.75rem;">
+        <div class="lesson-title">Trig Insights</div>
+        The <span style="color:#b22222">red line</span> represents <strong>Sine</strong> (vertical offset), 
+        the <span style="color:#4a90d9">blue line</span> is <strong>Cosine</strong> (horizontal offset). 
+        Observe how they fluctuate as you change the angle!
+      </div>
+    </div>
     <div class="panel active" id="panel-scientific">
       <div class="display">
         <div class="result" id="sci-res">0</div>
@@ -270,6 +328,75 @@
       </div>
     </div>
 
+    <!-- GRAPHER PANEL -->
+    <div class="panel" id="panel-graph">
+      <div class="display" style="justify-content: center; text-align: center; min-height: 320px; padding: 5px; background: white;">
+        <canvas id="graph-canvas" width="450" height="300" style="width: 100%; height: 100%; border-radius: 4px;"></canvas>
+      </div>
+      <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 12px; margin-top: 10px;">
+        <select class="ld-input" id="graph-preset" onchange="renderGraph()" style="width: 100%; margin-bottom: 10px;">
+          <option value="linear">Linear: y = ax + b</option>
+          <option value="quad">Quadratic: y = ax² + bx + c</option>
+          <option value="sin">Sine: y = a * sin(bx + c)</option>
+        </select>
+        <div style="display: grid; grid-template-columns: 30px 1fr 40px; gap: 10px; align-items: center; color: #a0c4ff; font-weight: bold;">
+          <span>a:</span><input type="range" id="graph-a" min="-10" max="10" step="0.5" value="1" oninput="renderGraph()"><span id="val-a">1</span>
+          <span>b:</span><input type="range" id="graph-b" min="-10" max="10" step="0.5" value="0" oninput="renderGraph()"><span id="val-b">0</span>
+          <span>c:</span><input type="range" id="graph-c" min="-10" max="10" step="0.5" value="0" oninput="renderGraph()"><span id="val-c">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOLVER PANEL -->
+    <div class="panel" id="panel-solve">
+      <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 12px;">
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 10px;">Linear: ax + b = c</div>
+        <div class="ld-input-row">
+          <input class="ld-input" type="number" id="solve-lin-a" placeholder="a" oninput="solveLinear()">
+          <span style="color: #888;">x +</span>
+          <input class="ld-input" type="number" id="solve-lin-b" placeholder="b" oninput="solveLinear()">
+          <span style="color: #888;">=</span>
+          <input class="ld-input" type="number" id="solve-lin-c" placeholder="c" oninput="solveLinear()">
+        </div>
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin: 20px 0 10px;">Quadratic: ax² + bx + c = 0</div>
+        <div class="ld-input-row">
+          <input class="ld-input" type="number" id="solve-quad-a" placeholder="a" oninput="solveQuadratic()">
+          <input class="ld-input" type="number" id="solve-quad-b" placeholder="b" oninput="solveQuadratic()">
+          <input class="ld-input" type="number" id="solve-quad-c" placeholder="c" oninput="solveQuadratic()">
+        </div>
+      </div>
+      <div class="display" style="min-height: 100px; margin-top: 15px; justify-content: center;">
+        <div id="solve-res" style="color: #b22222; font-family: 'Courier New', monospace; font-size: 1.5rem; font-weight: 700; text-align: center;">Enter coefficients</div>
+      </div>
+      <div class="lesson-box" id="solve-lesson"></div>
+    </div>
+
+    <!-- BASE CONVERTER PANEL -->
+    <div class="panel" id="panel-base">
+      <div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 12px;">
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Decimal (Base 10)</div>
+          <input class="ld-input" type="text" id="base-dec" oninput="syncBase('dec')" style="width: 100%;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Binary (Base 2)</div>
+          <input class="ld-input" type="text" id="base-bin" oninput="syncBase('bin')" style="width: 100%;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Hexadecimal (Base 16)</div>
+          <input class="ld-input" type="text" id="base-hex" oninput="syncBase('hex')" style="width: 100%;">
+        </div>
+        <div>
+          <div style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Octal (Base 8)</div>
+          <input class="ld-input" type="text" id="base-oct" oninput="syncBase('oct')" style="width: 100%;">
+        </div>
+      </div>
+      <div class="lesson-box visible" style="margin-top: 15px;">
+        <div class="lesson-title">Place Value Logic</div>
+        <div id="base-explanation" style="font-family: 'Courier New', monospace; font-size: 0.8rem; line-height: 1.4;">Enter a number to see its expanded mathematical form.</div>
+      </div>
+    </div>
+
     <!-- FRACTION PANEL -->
     <div class="panel" id="panel-fraction">
       <div class="display" style="text-align:center; justify-content: center; min-height: 200px; background-position: 0 0;">
@@ -338,6 +465,29 @@
       <button class="btn-sci" style="width:100%; margin-top:10px;" onclick="window.print()">🖨️ Export as PDF</button>
     </div>
 
+    <!-- POWERS PANEL -->
+    <div class="panel" id="panel-powers">
+      <div class="ld-input-row" style="align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 30px;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Base</span>
+          <input class="ld-input" type="number" id="pow-base" placeholder="Base" style="width: 100px; text-align: center; font-size: 1.5rem;" oninput="calcPower()">
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Exponent</span>
+          <input class="ld-input" type="number" id="pow-exp" placeholder="Exp" style="width: 80px; text-align: center; font-size: 1.2rem; margin-bottom: 15px;" oninput="calcPower()">
+        </div>
+      </div>
+
+      <div class="display" style="text-align:center; justify-content: center; min-height: 150px;">
+        <div id="pow-visual-res" style="font-size: 2rem; font-family: 'Times New Roman', serif;">
+          Enter values above
+        </div>
+      </div>
+
+      <button class="btn-eq" style="width:100%; padding:15px; margin-top:15px;" onclick="calcPower()">Calculate Power</button>
+      <div class="lesson-box" id="pow-lesson"></div>
+    </div>
+
   </div>
 
   <script>
@@ -346,6 +496,7 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('panel-' + name).classList.add('active');
       event.target.classList.add('active');
+      if (name === 'graph') renderGraph();
     }
 
     // --- FRACTION KEYPAD & LIVE LOGIC ---
@@ -559,6 +710,181 @@
       }
     }
 
+    // --- TRIGONOMETRY LOGIC ---
+    function updateTrig() {
+      const angleVal = parseFloat(document.getElementById('trig-angle').value) || 0;
+      const unit = document.getElementById('trig-unit').value;
+      const rad = unit === 'deg' ? angleVal * Math.PI / 180 : angleVal;
+
+      const s = Math.sin(rad), c = Math.cos(rad), t = Math.tan(rad);
+      
+      // Update Results
+      document.getElementById('t-res-sin').textContent = s.toFixed(4);
+      document.getElementById('t-res-cos').textContent = c.toFixed(4);
+      document.getElementById('t-res-tan').textContent = Math.abs(t) > 1e10 ? "∞" : t.toFixed(4);
+
+      // Update SVG
+      const px = c * 50, py = -s * 50; // SVG y is inverted
+      document.getElementById('trig-point').setAttribute('cx', px);
+      document.getElementById('trig-point').setAttribute('cy', py);
+      document.getElementById('trig-line-hyp').setAttribute('x2', px);
+      document.getElementById('trig-line-hyp').setAttribute('y2', py);
+      document.getElementById('trig-line-cos').setAttribute('x2', px);
+      document.getElementById('trig-line-sin').setAttribute('x1', px);
+      document.getElementById('trig-line-sin').setAttribute('y1', 0);
+      document.getElementById('trig-line-sin').setAttribute('x2', px);
+      document.getElementById('trig-line-sin').setAttribute('y2', py);
+    }
+
+    function rectToPolar() {
+      const x = parseFloat(document.getElementById('coord-x').value) || 0;
+      const y = parseFloat(document.getElementById('coord-y').value) || 0;
+      const r = Math.sqrt(x*x + y*y);
+      const theta = Math.atan2(y, x) * 180 / Math.PI;
+      document.getElementById('coord-r').value = r.toFixed(2);
+      document.getElementById('coord-theta').value = theta.toFixed(2);
+    }
+
+    function polarToRect() {
+      const r = parseFloat(document.getElementById('coord-r').value) || 0;
+      const theta = parseFloat(document.getElementById('coord-theta').value) || 0;
+      const x = r * Math.cos(theta * Math.PI / 180);
+      const y = r * Math.sin(theta * Math.PI / 180);
+      document.getElementById('coord-x').value = x.toFixed(2);
+      document.getElementById('coord-y').value = y.toFixed(2);
+    }
+
+    // --- GRAPHER LOGIC ---
+    function renderGraph() {
+      const canvas = document.getElementById('graph-canvas');
+      const ctx = canvas.getContext('2d');
+      const a = parseFloat(document.getElementById('graph-a').value);
+      const b = parseFloat(document.getElementById('graph-b').value);
+      const c = parseFloat(document.getElementById('graph-c').value);
+      const preset = document.getElementById('graph-preset').value;
+      
+      document.getElementById('val-a').textContent = a;
+      document.getElementById('val-b').textContent = b;
+      document.getElementById('val-c').textContent = c;
+
+      // Clear and draw grid
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const scale = 20; // Pixels per unit
+
+      ctx.strokeStyle = '#eee';
+      ctx.beginPath();
+      for(let x=0; x<canvas.width; x+=scale) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+      for(let y=0; y<canvas.height; y+=scale) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+      ctx.stroke();
+
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+      ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height);
+      ctx.stroke();
+
+      // Draw function
+      ctx.strokeStyle = '#b22222';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      let first = true;
+      for (let px = 0; px < canvas.width; px++) {
+        const x = (px - centerX) / scale;
+        let y;
+        if (preset === 'linear') y = a * x + b;
+        else if (preset === 'quad') y = a * x * x + b * x + c;
+        else if (preset === 'sin') y = a * Math.sin(b * x + c);
+
+        const py = centerY - (y * scale);
+        if (first) { ctx.moveTo(px, py); first = false; }
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+
+    // --- SOLVER LOGIC ---
+    function solveLinear() {
+      const a = parseFloat(document.getElementById('solve-lin-a').value);
+      const b = parseFloat(document.getElementById('solve-lin-b').value);
+      const c = parseFloat(document.getElementById('solve-lin-c').value);
+      const res = document.getElementById('solve-res');
+      const lesson = document.getElementById('solve-lesson');
+      
+      if (isNaN(a) || isNaN(b) || isNaN(c)) return;
+      if (a === 0) { res.textContent = "Invalid (a=0)"; return; }
+      
+      const x = (c - b) / a;
+      res.textContent = "x = " + parseFloat(x.toFixed(4));
+      lesson.innerHTML = `<div class="lesson-title">Solving ${a}x + ${b} = ${c}</div>
+        1. Subtract ${b} from both sides: ${a}x = ${c - b}<br>
+        2. Divide both sides by ${a}: x = ${x.toFixed(4)}`;
+      lesson.classList.add('visible');
+    }
+
+    function solveQuadratic() {
+      const a = parseFloat(document.getElementById('solve-quad-a').value);
+      const b = parseFloat(document.getElementById('solve-quad-b').value);
+      const c = parseFloat(document.getElementById('solve-quad-c').value);
+      const res = document.getElementById('solve-res');
+      const lesson = document.getElementById('solve-lesson');
+      
+      if (isNaN(a) || isNaN(b) || isNaN(c)) return;
+      if (a === 0) { solveLinear(); return; }
+      
+      const disc = b*b - 4*a*c;
+      if (disc < 0) {
+        res.textContent = "No Real Roots (D < 0)";
+        lesson.innerHTML = `<div class="lesson-title">Quadratic Formula</div>Discriminant D = ${disc}. Since D is negative, there are no real solutions.`;
+      } else {
+        const x1 = (-b + Math.sqrt(disc)) / (2 * a);
+        const x2 = (-b - Math.sqrt(disc)) / (2 * a);
+        res.textContent = `x1 = ${x1.toFixed(2)}, x2 = ${x2.toFixed(2)}`;
+        lesson.innerHTML = `<div class="lesson-title">Quadratic Formula</div>
+          1. D = b² - 4ac = ${disc}<br>
+          2. x = (-b ± √D) / 2a<br>
+          3. x = (${-b} ± ${Math.sqrt(disc).toFixed(2)}) / ${2*a}`;
+      }
+      lesson.classList.add('visible');
+    }
+
+    // --- BASE CONVERTER LOGIC ---
+    function syncBase(type) {
+      const el = document.getElementById('base-' + type);
+      let val;
+      try {
+        if (type === 'dec') val = parseInt(el.value, 10);
+        else if (type === 'bin') val = parseInt(el.value, 2);
+        else if (type === 'hex') val = parseInt(el.value, 16);
+        else if (type === 'oct') val = parseInt(el.value, 8);
+        
+        if (isNaN(val)) return;
+        
+        if (type !== 'dec') document.getElementById('base-dec').value = val.toString(10);
+        if (type !== 'bin') document.getElementById('base-bin').value = val.toString(2);
+        if (type !== 'hex') document.getElementById('base-hex').value = val.toString(16).toUpperCase();
+        if (type !== 'oct') document.getElementById('base-oct').value = val.toString(8);
+        
+        updateBaseExplanation(val);
+      } catch(e) {}
+    }
+
+    function updateBaseExplanation(n) {
+      const bin = n.toString(2);
+      let exp = n + " = ";
+      for (let i = 0; i < bin.length; i++) {
+        const bit = bin[bin.length - 1 - i];
+        if (bit === '1') {
+          exp += `(1 × 2<sup>${i}</sup>) + `;
+        } else {
+          exp += `(0 × 2<sup>${i}</sup>) + `;
+        }
+      }
+      document.getElementById('base-explanation').innerHTML = exp.slice(0, -3);
+    }
+
     // --- ADVANCED PARSER LOGIC (Shunting-yard) ---
     let advExpr = "";
     function insertAdv(c) { advExpr += c; liveUpdateAdv(); }
@@ -699,6 +1025,35 @@
         }
       });
       return stack[0];
+    }
+
+    // --- POWERS LOGIC ---
+    function calcPower() {
+      const base = parseFloat(document.getElementById('pow-base').value);
+      const exp = parseInt(document.getElementById('pow-exp').value);
+      const visual = document.getElementById('pow-visual-res');
+      const lesson = document.getElementById('pow-lesson');
+
+      if (isNaN(base) || isNaN(exp)) return;
+
+      const res = Math.pow(base, exp);
+      visual.innerHTML = `${base}<sup>${exp}</sup> = <span style="color:#b22222;">${res}</span>`;
+
+      let breakdown = "";
+      if (exp === 0) {
+        breakdown = "Any non-zero number to the power of 0 is always 1.";
+      } else if (exp < 0) {
+        breakdown = `A negative exponent means reciprocal: 1 / (${base}<sup>${Math.abs(exp)}</sup>)`;
+      } else if (exp > 100) {
+        breakdown = `Result is very large. In expanded form, this is ${base} multiplied by itself ${exp} times.`;
+      } else {
+        let parts = [];
+        for (let i = 0; i < exp; i++) parts.push(base);
+        breakdown = `<strong>Expanded Form:</strong><br>${parts.join(' × ')} = ${res}`;
+      }
+
+      lesson.innerHTML = `<div class="lesson-title">Power Breakdown</div>${breakdown}`;
+      lesson.classList.add('visible');
     }
   </script>
 </body>
