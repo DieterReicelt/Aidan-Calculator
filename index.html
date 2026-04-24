@@ -1479,8 +1479,11 @@
           const y = 150 - padB - h;
           ctx.fillStyle = "#b22222";
           ctx.fillRect(x, y, barWidth, h);
-          // X labels
-          ctx.fillStyle = "#888"; ctx.textAlign = "center";
+          // Value label
+          ctx.fillStyle = "#333"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+          ctx.fillText(n, x + barWidth/2, y - 5);
+          // X labels (Index)
+          ctx.fillStyle = "#888"; ctx.font = "10px sans-serif";
           ctx.fillText(i+1, x + barWidth/2, 150 - 10);
         });
       } else {
@@ -1501,7 +1504,11 @@
           const y = 150 - padB - (n / maxVal) * chartH;
           ctx.fillStyle = "#b22222";
           ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = "#888"; ctx.textAlign = "center";
+          // Value label
+          ctx.fillStyle = "#333"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+          ctx.fillText(n, x, y - 10);
+          // X labels (Index)
+          ctx.fillStyle = "#888"; ctx.font = "10px sans-serif";
           ctx.fillText(i+1, x, 150 - 10);
         });
       }
