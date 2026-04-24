@@ -157,6 +157,13 @@
       .calculator { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; }
       .display { border: 1px solid #ccc !important; -webkit-print-color-adjust: exact; min-height: 400px; }
       .lesson-box { display: block !important; border: 1px solid #ddd !important; }
+      
+      body.print-history-only * { visibility: hidden; }
+      body.print-history-only .history-panel, 
+      body.print-history-only .history-panel * { visibility: visible; }
+      body.print-history-only .history-panel { 
+        position: absolute; left: 0; top: 0; width: 100%; max-height: none; background: white; 
+      }
     }
   </style>
 </head>
@@ -275,6 +282,13 @@
         <button class="btn-op" onclick="insertChar('^')">xʸ</button>
         <button class="btn-op" onclick="insertChar('+')">+</button>
         <button class="btn-eq" onclick="calculateSci()" style="grid-column: span 4; margin-top:5px; font-size:1.2rem;">ENTER</button>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; font-weight: 700;">History</div>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="saveHistoryPDF()" style="background: var(--btn-special-bg); color: var(--btn-special-text); border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 700;">📄 PDF</button>
+          <button onclick="clearSciHistory()" style="background: var(--btn-clear-bg); color: var(--btn-clear-text); border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 700;">🗑️ CLEAR</button>
+        </div>
       </div>
       <div class="history-panel" id="sci-history"></div>
     </div>
@@ -630,6 +644,24 @@
       updateSciHistory(); 
     }
     function updateSciHistory() { document.getElementById('sci-history').innerHTML = sciHistory.map(i => `<div class="history-item">${i.e} = <strong>${i.r}</strong></div>`).join(''); }
+
+    function clearSciHistory() {
+      if (confirm("Clear all calculation history?")) {
+        sciHistory = [];
+        localStorage.removeItem('sciHistory');
+        updateSciHistory();
+      }
+    }
+
+    function saveHistoryPDF() {
+      if (sciHistory.length === 0) {
+        alert("History is empty!");
+        return;
+      }
+      document.body.classList.add('print-history-only');
+      window.print();
+      document.body.classList.remove('print-history-only');
+    }
 
     // --- FRACTION LOGIC ---
     let fracOp = '+';
