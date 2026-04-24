@@ -650,6 +650,7 @@
             <select id="stats-graph-type" class="ld-input" style="padding: 4px 8px; font-size: 0.7rem; flex: none; width: auto;" onchange="calcStats()">
               <option value="bar">📊 Bar Chart</option>
               <option value="line">📈 Line Graph</option>
+              <option value="pie">🥧 Pie Chart</option>
             </select>
             <button onclick="saveStatsPDF()" style="background: var(--btn-special-bg); color: var(--btn-special-text); border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 700;">📄 PDF</button>
           </div>
@@ -1450,25 +1451,23 @@
       const chartW = 400 - padL - padR;
       const chartH = 150 - padT - padB;
       const maxVal = Math.max(...rawNums, 1);
+      const colors = ['#b22222', '#0055aa', '#007733', '#cc6600', '#663399', '#333333', '#aa00aa', '#00aaaa'];
 
-      // Draw Axes
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(padL, padT); ctx.lineTo(padL, 150 - padB); // Y Axis
-      ctx.lineTo(400 - padR, 150 - padB); // X Axis
-      ctx.stroke();
+      if (graphType !== 'pie') {
+        // Draw Axes for Bar/Line
+        ctx.strokeStyle = "#333"; ctx.lineWidth = 2; ctx.beginPath();
+        ctx.moveTo(padL, padT); ctx.lineTo(padL, 150 - padB); ctx.lineTo(400 - padR, 150 - padB);
+        ctx.stroke();
 
-      // Y-Axis Ticks & Labels
-      ctx.fillStyle = "#666";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "right";
-      const yTicks = 4;
-      for(let i=0; i<=yTicks; i++) {
-        const val = (maxVal / yTicks) * i;
-        const y = 150 - padB - (val / maxVal) * chartH;
-        ctx.fillText(val.toFixed(1), padL - 5, y + 3);
-        ctx.beginPath(); ctx.moveTo(padL - 3, y); ctx.lineTo(padL, y); ctx.stroke();
+        // Y-Axis Ticks
+        ctx.fillStyle = "#666"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+        const yTicks = 4;
+        for(let i=0; i<=yTicks; i++) {
+          const val = (maxVal / yTicks) * i;
+          const y = 150 - padB - (val / maxVal) * chartH;
+          ctx.fillText(val.toFixed(1), padL - 5, y + 3);
+          ctx.beginPath(); ctx.moveTo(padL - 3, y); ctx.lineTo(padL, y); ctx.stroke();
+        }
       }
 
       if (graphType === 'bar') {
@@ -1477,40 +1476,59 @@
           const h = (n / maxVal) * chartH;
           const x = padL + i * (barWidth + 4) + 2;
           const y = 150 - padB - h;
-          ctx.fillStyle = "#b22222";
+          ctx.fillStyle = colors[i % colors.length];
           ctx.fillRect(x, y, barWidth, h);
-          // Value label
           ctx.fillStyle = "#333"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
           ctx.fillText(n, x + barWidth/2, y - 5);
-          // X labels (Index)
           ctx.fillStyle = "#888"; ctx.font = "10px sans-serif";
           ctx.fillText(i+1, x + barWidth/2, 150 - 10);
         });
-      } else {
+      } else if (graphType === 'line') {
         const step = chartW / (rawNums.length > 1 ? rawNums.length - 1 : 1);
-        ctx.strokeStyle = "#0055aa";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
+        ctx.strokeStyle = "#0055aa"; ctx.lineWidth = 3; ctx.beginPath();
         rawNums.forEach((n, i) => {
           const x = padL + i * (rawNums.length > 1 ? step : chartW/2);
           const y = 150 - padB - (n / maxVal) * chartH;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
         ctx.stroke();
-        // Points and Labels
         rawNums.forEach((n, i) => {
           const x = padL + i * (rawNums.length > 1 ? step : chartW/2);
           const y = 150 - padB - (n / maxVal) * chartH;
-          ctx.fillStyle = "#b22222";
-          ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
-          // Value label
+          ctx.fillStyle = "#b22222"; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = "#333"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
           ctx.fillText(n, x, y - 10);
-          // X labels (Index)
-          ctx.fillStyle = "#888"; ctx.font = "10px sans-serif";
-          ctx.fillText(i+1, x, 150 - 10);
+          ctx.fillStyle = "#888"; ctx.font = "10px sans-serif"; ctx.fillText(i+1, x, 150 - 10);
         });
+      } else if (graphType === 'pie') {
+        let total = rawNums.reduce((a,b) => a+b, 0);
+        let currentAngle = -0.5 * Math.PI;
+        const centerX = 120, centerY = 75, radius = 60;
+        
+        rawNums.forEach((n, i) => {
+          const sliceAngle = (n / total) * 2 * Math.PI;
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Labels inside slices if large enough
+          if (sliceAngle > 0.15) {
+            const labelAngle = currentAngle + sliceAngle / 2;
+            const lx = centerX + Math.cos(labelAngle) * (radius * 0.7);
+            const ly = centerY + Math.sin(labelAngle) * (radius * 0.7);
+            ctx.fillStyle = "white"; ctx.font = "bold 9px sans-serif"; ctx.textAlign = "center";
+            ctx.fillText(Math.round(n/total*100) + "%", lx, ly);
+          }
+          currentAngle += sliceAngle;
+        });
+
+        // Legend
+        results.innerHTML += `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">` +
+          rawNums.map((n, i) => `<div style="font-size:0.75rem; display:flex; align-items:center;"><span style="display:inline-block; width:10px; height:10px; background:${colors[i % colors.length]}; margin-right:5px;"></span> #${i+1}: <strong>${n}</strong></div>`).join('') +
+          `</div>`;
       }
       
       lesson.innerHTML = `<div class="lesson-title">Stats breakdown</div>1. Sorted list: [${nums.join(', ')}]<br>2. Mean = ${sum}/${nums.length} = ${mean.toFixed(2)}`;
