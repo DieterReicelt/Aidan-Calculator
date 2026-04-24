@@ -1,4 +1,4 @@
-# GEMINI.md - Math Notebook | Advanced Pedagogical Calculator
+# GEMINI.md - Aidan's Math Notebook | Advanced Pedagogical Calculator
 
 ## Project Overview
 An interactive, single-file pedagogical math tool designed for students and educators. It provides visual, step-by-step logic for various mathematical operations.

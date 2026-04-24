@@ -1,4 +1,4 @@
-# 🔬 Math Notebook | Advanced Pedagogical Calculator
+# 🔬 Aidan's Math Notebook | Advanced Pedagogical Calculator
 
 An interactive, single-file web application designed to help students and educators explore mathematical concepts through visualization and step-by-step logic.
 
