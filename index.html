@@ -152,21 +152,41 @@
     .lesson-title { color: #b22222; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; }
 
     @media print {
-      body { background: white !important; }
+      body { background: white !important; color: black !important; }
       .tab-bar, .tab-select, .ld-input-row, button, .keypad { display: none !important; }
       .calculator { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; }
       .display { border: 1px solid #ccc !important; -webkit-print-color-adjust: exact; min-height: 400px; }
       .lesson-box { display: block !important; border: 1px solid #ddd !important; }
       
-      /* Default behavior: hide history on normal page print */
+      /* Default: hide history in normal prints */
       .history-panel { display: none !important; }
 
-      /* Special behavior: show ONLY history when this class is added */
-      body.print-history-only * { visibility: hidden; display: none !important; }
+      /* Special: show ONLY history when this class is added */
+      body.print-history-only * { visibility: hidden !important; }
       body.print-history-only .history-panel, 
-      body.print-history-only .history-panel * { visibility: visible; display: block !important; }
+      body.print-history-only .history-panel * { 
+        visibility: visible !important; 
+        display: block !important; 
+        color: black !important;
+      }
       body.print-history-only .history-panel { 
-        position: absolute; left: 0; top: 0; width: 100%; max-height: none; background: white; 
+        display: block !important;
+        position: fixed !important;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: white !important;
+        z-index: 99999;
+        padding: 40px !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      body.print-history-only .history-item {
+        border-bottom: 1px solid #ddd !important;
+        font-size: 1.2rem !important;
+        padding: 10px 0 !important;
+        color: #333 !important;
+      }
+      body.print-history-only .history-item strong {
+        color: #b22222 !important;
       }
     }
   </style>
