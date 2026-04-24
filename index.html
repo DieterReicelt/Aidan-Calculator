@@ -472,21 +472,30 @@
 
     <!-- POWERS PANEL -->
     <div class="panel" id="panel-powers">
-      <div class="ld-input-row" style="align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 30px;">
+      <div class="ld-input-row" style="align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 20px;">
         <div style="display: flex; flex-direction: column; align-items: center;">
           <span style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Base</span>
-          <input class="ld-input" type="number" id="pow-base" placeholder="Base" style="width: 100px; text-align: center; font-size: 1.5rem;" oninput="calcPower()">
+          <input class="ld-input" type="number" id="pow-base" placeholder="Base" style="width: 100px; text-align: center; font-size: 1.5rem;" onfocus="setActivePowInput(this)" oninput="calcPower()">
         </div>
         <div style="display: flex; flex-direction: column; align-items: center;">
           <span style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Exponent</span>
-          <input class="ld-input" type="number" id="pow-exp" placeholder="Exp" style="width: 80px; text-align: center; font-size: 1.2rem; margin-bottom: 15px;" oninput="calcPower()">
+          <input class="ld-input" type="number" id="pow-exp" placeholder="Exp" style="width: 80px; text-align: center; font-size: 1.2rem; margin-bottom: 15px;" onfocus="setActivePowInput(this)" oninput="calcPower()">
         </div>
       </div>
 
-      <div class="display" style="text-align:center; justify-content: center; min-height: 150px;">
+      <div class="display" style="text-align:center; justify-content: center; min-height: 120px;">
         <div id="pow-visual-res" style="font-size: 2rem; font-family: 'Times New Roman', serif;">
           Enter values above
         </div>
+      </div>
+
+      <div class="keypad" style="margin-top: 15px;">
+        <button class="btn-num" onclick="keypadTypePow('7')">7</button><button class="btn-num" onclick="keypadTypePow('8')">8</button><button class="btn-num" onclick="keypadTypePow('9')">9</button>
+        <button class="btn-num" onclick="keypadTypePow('4')">4</button><button class="btn-num" onclick="keypadTypePow('5')">5</button><button class="btn-num" onclick="keypadTypePow('6')">6</button>
+        <button class="btn-num" onclick="keypadTypePow('1')">1</button><button class="btn-num" onclick="keypadTypePow('2')">2</button><button class="btn-num" onclick="keypadTypePow('3')">3</button>
+        <button class="btn-clear" style="background:#ff4757; color:#fff" onclick="keypadTypePow('AC')">AC</button>
+        <button class="btn-num" onclick="keypadTypePow('0')">0</button>
+        <button class="btn-clear" onclick="keypadTypePow('B')">⌫</button>
       </div>
 
       <button class="btn-eq" style="width:100%; padding:15px; margin-top:15px;" onclick="calcPower()">Calculate Power</button>
@@ -1032,13 +1041,37 @@
     }
 
     // --- POWERS LOGIC ---
+    let activePowInput = null;
+    function setActivePowInput(el) { activePowInput = el; }
+    function keypadTypePow(key) {
+      if (key === 'AC') {
+        document.getElementById('pow-base').value = ""; document.getElementById('pow-exp').value = "";
+        document.getElementById('pow-visual-res').innerHTML = "Enter values above";
+        document.getElementById('pow-lesson').innerHTML = ""; document.getElementById('pow-lesson').classList.remove('visible');
+        return;
+      }
+      if (!activePowInput) activePowInput = document.getElementById('pow-base');
+      if (key === 'B') activePowInput.value = activePowInput.value.slice(0, -1);
+      else activePowInput.value += key;
+      calcPower();
+    }
+
     function calcPower() {
-      const base = parseFloat(document.getElementById('pow-base').value);
-      const exp = parseInt(document.getElementById('pow-exp').value);
+      const baseStr = document.getElementById('pow-base').value;
+      const expStr = document.getElementById('pow-exp').value;
+      const base = parseFloat(baseStr);
+      const exp = parseInt(expStr);
       const visual = document.getElementById('pow-visual-res');
       const lesson = document.getElementById('pow-lesson');
 
-      if (isNaN(base) || isNaN(exp)) return;
+      if (baseStr === "" || expStr === "" || isNaN(base) || isNaN(exp)) {
+        if (baseStr === "" && expStr === "") {
+          visual.innerHTML = "Enter values above";
+          lesson.innerHTML = "";
+          lesson.classList.remove('visible');
+        }
+        return;
+      }
 
       const res = Math.pow(base, exp);
       visual.innerHTML = `${base}<sup>${exp}</sup> = <span style="color:#b22222;">${res}</span>`;
