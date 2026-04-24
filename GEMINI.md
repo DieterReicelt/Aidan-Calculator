@@ -6,17 +6,17 @@ An interactive, single-file pedagogical math tool designed for students and educ
 ## Architecture
 - **Single-File App**: All HTML, CSS, and JavaScript are contained within `index.html`.
 - **Zero Dependencies**: Pure Vanilla JS, CSS3, and HTML5. No external libraries (e.g., MathJax, Chart.js) are used to maintain portability and simplicity.
-- **Tab-Based Navigation**: Features multiple specialized panels (Scientific, Fractions, Column Math, Trig, Grapher, Solver, Base Converter, Advanced Parser).
+- **Dropdown Navigation**: Features a single dropdown menu to switch between specialized panels (Scientific, Fractions, Column Math, Trig, Grapher, Solver, Base Converter, Advanced Parser, Powers).
 
 ## Structural Breakdown of `index.html`
-1. **HTML Body**: Tab bar followed by the main `.calculator` container housing individual `.panel` elements.
+1. **HTML Body**: Dropdown navigation menu followed by the main `.calculator` container housing individual `.panel` elements.
 2. **CSS (`<style>`)**:
    - Uses CSS Variables (`:root`) for colors and themes.
    - Fixed width (`520px`) for the main container.
    - Custom grid-based background for the "Notebook" display.
-   - Media queries for print-ready formatting.
+   - Media queries for print-ready formatting (hides dropdown and buttons).
 3. **JavaScript (`<script>`)**:
-   - **Tab Logic**: Simple `switchTab` function.
+   - **Tab Logic**: Simple `switchTab` function triggered by dropdown `onchange`.
    - **Shunting-Yard Parser**: Converts infix to postfix and evaluates.
    - **Pedagogical Solvers**: Logic for generating visual grids (Column Math) and text explanations (Equation Solver).
    - **Visualizations**: SVG for the Unit Circle and Canvas for the Grapher.
@@ -32,8 +32,8 @@ An interactive, single-file pedagogical math tool designed for students and educ
 - **Interactive Elements**: Buttons often use inline `onclick` handlers. Maintain this pattern for existing features, or refactor all to event listeners if requested.
 
 ## Common Tasks
-- **Adding a Tab**:
-  1. Add a button to `.tab-bar` with `onclick="switchTab('yourname')"`.
+- **Adding a Section**:
+  1. Add an `<option value="yourname">Text</option>` to the `.tab-select` dropdown.
   2. Create a `<div class="panel" id="panel-yourname">` inside `.calculator`.
   3. Implement the logic in a new section in the `<script>` tag.
 - **Updating Visuals**: Update the `:root` variables in the CSS section.

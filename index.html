@@ -48,13 +48,16 @@
 
     h1 { color: #e0e0e0; font-size: 1.1rem; margin-bottom: 12px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
 
-    /* ---- TAB BAR ---- */
-    .tab-bar { display: flex; width: 520px; max-width: 95%; margin-bottom: -1px; gap: 4px; flex-wrap: wrap; justify-content: center; }
-    .tab-btn {
-      flex: 1 1 100px; padding: 10px 5px; border: none; border-radius: 12px 12px 0 0; font-size: 0.75rem; font-weight: 700; cursor: pointer;
-      background: #13132a; color: #5566aa; transition: all 0.2s; margin-bottom: 2px;
+    /* ---- TAB BAR DROPDOWN ---- */
+    .tab-bar { width: 520px; max-width: 95%; margin-bottom: 10px; }
+    .tab-select {
+      width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px;
+      background: #13132a; color: #a0c4ff; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      outline: none; appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0c4ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 15px center;
     }
-    .tab-btn.active { background: #1e1e2e; color: #a0c4ff; }
+    .tab-select:focus { border-color: #a0c4ff; }
 
     /* ---- MAIN CALCULATOR BOX ---- */
     .calculator {
@@ -150,7 +153,7 @@
 
     @media print {
       body { background: white !important; }
-      .tab-bar, .ld-input-row, button, .history-panel, .keypad { display: none !important; }
+      .tab-bar, .tab-select, .ld-input-row, button, .history-panel, .keypad { display: none !important; }
       .calculator { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; }
       .display { border: 1px solid #ccc !important; -webkit-print-color-adjust: exact; min-height: 400px; }
       .lesson-box { display: block !important; border: 1px solid #ddd !important; }
@@ -163,15 +166,17 @@
   <h1>🔬 Math Notebook</h1>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('scientific')">🧮 Scientific</button>
-    <button class="tab-btn"        onclick="switchTab('advanced')">🧠 Advanced</button>
-    <button class="tab-btn"        onclick="switchTab('trig')">📐 Trig</button>
-    <button class="tab-btn"        onclick="switchTab('graph')">📈 Graph</button>
-    <button class="tab-btn"        onclick="switchTab('solve')">⚖️ Solve</button>
-    <button class="tab-btn"        onclick="switchTab('base')">🔢 Base</button>
-    <button class="tab-btn"        onclick="switchTab('fraction')">½ Fractions</button>
-    <button class="tab-btn"        onclick="switchTab('column')">📏 Column Math</button>
-    <button class="tab-btn"        onclick="switchTab('powers')">⚡ Powers</button>
+    <select class="tab-select" onchange="switchTab(this.value)">
+      <option value="scientific">🧮 Scientific Calculator</option>
+      <option value="advanced">🧠 Advanced Parser (Shunting-yard)</option>
+      <option value="trig">📐 Trigonometry & Unit Circle</option>
+      <option value="graph">📈 Function Grapher</option>
+      <option value="solve">⚖️ Equation Solver</option>
+      <option value="base">🔢 Base Converter</option>
+      <option value="fraction">½ Fraction Calculator</option>
+      <option value="column">📏 Column Math (Step-by-Step)</option>
+      <option value="powers">⚡ Powers & Exponents</option>
+    </select>
   </div>
 
   <div class="calculator">
@@ -493,9 +498,8 @@
   <script>
     function switchTab(name) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('panel-' + name).classList.add('active');
-      event.target.classList.add('active');
+      const activePanel = document.getElementById('panel-' + name);
+      if (activePanel) activePanel.classList.add('active');
       if (name === 'graph') renderGraph();
     }
 
