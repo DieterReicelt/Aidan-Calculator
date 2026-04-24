@@ -1444,33 +1444,65 @@
       `;
       
       ctx.clearRect(0,0,400,150);
-      const max = Math.max(...rawNums, 1); // Avoid div by zero
       
+      // Chart Constants
+      const padL = 40, padR = 10, padT = 10, padB = 25;
+      const chartW = 400 - padL - padR;
+      const chartH = 150 - padT - padB;
+      const maxVal = Math.max(...rawNums, 1);
+
+      // Draw Axes
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT); ctx.lineTo(padL, 150 - padB); // Y Axis
+      ctx.lineTo(400 - padR, 150 - padB); // X Axis
+      ctx.stroke();
+
+      // Y-Axis Ticks & Labels
+      ctx.fillStyle = "#666";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "right";
+      const yTicks = 4;
+      for(let i=0; i<=yTicks; i++) {
+        const val = (maxVal / yTicks) * i;
+        const y = 150 - padB - (val / maxVal) * chartH;
+        ctx.fillText(val.toFixed(1), padL - 5, y + 3);
+        ctx.beginPath(); ctx.moveTo(padL - 3, y); ctx.lineTo(padL, y); ctx.stroke();
+      }
+
       if (graphType === 'bar') {
-        const barWidth = (400 / rawNums.length) - 4;
+        const barWidth = (chartW / rawNums.length) - 4;
         rawNums.forEach((n, i) => {
-          const h = (n / max) * 120;
+          const h = (n / maxVal) * chartH;
+          const x = padL + i * (barWidth + 4) + 2;
+          const y = 150 - padB - h;
           ctx.fillStyle = "#b22222";
-          ctx.fillRect(i * (barWidth + 4), 150 - h, barWidth, h);
+          ctx.fillRect(x, y, barWidth, h);
+          // X labels
+          ctx.fillStyle = "#888"; ctx.textAlign = "center";
+          ctx.fillText(i+1, x + barWidth/2, 150 - 10);
         });
       } else {
+        const step = chartW / (rawNums.length > 1 ? rawNums.length - 1 : 1);
         ctx.strokeStyle = "#0055aa";
         ctx.lineWidth = 3;
         ctx.beginPath();
-        const step = 400 / (rawNums.length > 1 ? rawNums.length - 1 : 1);
         rawNums.forEach((n, i) => {
-          const x = i * (rawNums.length > 1 ? step : 200);
-          const y = 150 - (n / max) * 120;
+          const x = padL + i * (rawNums.length > 1 ? step : chartW/2);
+          const y = 150 - padB - (n / maxVal) * chartH;
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         });
         ctx.stroke();
-        // Points
+        // Points and Labels
         rawNums.forEach((n, i) => {
-          const x = i * (rawNums.length > 1 ? step : 200);
-          const y = 150 - (n / max) * 120;
+          const x = padL + i * (rawNums.length > 1 ? step : chartW/2);
+          const y = 150 - padB - (n / maxVal) * chartH;
           ctx.fillStyle = "#b22222";
           ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#888"; ctx.textAlign = "center";
+          ctx.fillText(i+1, x, 150 - 10);
         });
       }
       
