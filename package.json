@@ -1,0 +1,8 @@
+{
+  "name": "aidan-calculator",
+  "version": "1.0.0",
+  "description": "Pedagogical math tool",
+  "scripts": {
+    "validate": "echo 'Validating index.html...' && [ -f index.html ] && echo 'File exists.' || (echo 'index.html missing!' && exit 1)"
+  }
+}
