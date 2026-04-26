@@ -1,0 +1,22 @@
+:root {
+  --bg-gradient: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  --calc-bg: #1e1e2e;
+  --display-bg: #fdfdfd; 
+  --grid-color: rgba(0, 150, 255, 0.12); 
+  --margin-color: rgba(255, 0, 0, 0.18); 
+  --text-main: #2c3e50; 
+  --text-dim: #6677aa;
+  --border-color: #2a2a4a;
+  --btn-sci-bg: #2a2a50;
+  --btn-sci-text: #a0b4ff;
+  --btn-num-bg: #252535;
+  --btn-num-text: #e8f4ff;
+  --btn-op-bg: #1a3a5c;
+  --btn-op-text: #7ec8e3;
+  --btn-clear-bg: #3a1a2a;
+  --btn-clear-text: #ff7096;
+  --btn-special-bg: #1a3a2a;
+  --btn-special-text: #7edca0;
+  --header-text: #e0e0e0;
+  --input-bg: #13132a;
+}

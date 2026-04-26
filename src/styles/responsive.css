@@ -1,0 +1,71 @@
+/* MOBILE ADJUSTMENTS */
+@media (max-width: 480px) {
+  body { padding: 5px; }
+  .calculator { padding: 15px; border-radius: 15px; }
+  .buttons { gap: 5px; }
+  button { padding: 12px 2px; font-size: 0.9rem; }
+  .result { font-size: 2rem; }
+  .display { min-height: 140px; padding: 10px; }
+  h1 { font-size: 1rem; letter-spacing: 1px; }
+  .tab-select { font-size: 0.85rem; padding: 10px; }
+}
+
+@media (max-height: 600px) {
+  body { justify-content: flex-start; }
+  .display { min-height: 120px; }
+}
+
+@media print {
+  body { background: white !important; color: black !important; }
+  .tab-bar, .tab-select, .ld-input-row, button, .keypad { display: none !important; }
+  .calculator { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; }
+  .display { border: 1px solid #ccc !important; -webkit-print-color-adjust: exact; min-height: 400px; }
+  .lesson-box { display: block !important; border: 1px solid #ddd !important; }
+  
+  /* Default: hide history in normal prints */
+  .history-panel { display: none !important; }
+
+  /* Special: show ONLY history when this class is added */
+  body.print-history-only * { visibility: hidden !important; }
+  body.print-history-only .history-panel,
+  body.print-history-only .history-panel * {
+    visibility: visible !important;
+    display: block !important;
+    color: black !important;
+  }
+  body.print-history-only .history-panel {
+    position: fixed !important;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: white !important;
+    z-index: 99999;
+    padding: 40px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  body.print-history-only .history-item {
+    border-bottom: 1px solid #ddd !important;
+    font-size: 1.2rem !important;
+    padding: 10px 0 !important;
+    color: #333 !important;
+  }
+  body.print-history-only .history-item strong {
+    color: #b22222 !important;
+  }
+
+  /* Stats PDF Export */
+  body.print-stats-only * { visibility: hidden !important; }
+  body.print-stats-only .stats-export-area,
+  body.print-stats-only .stats-export-area * {
+    visibility: visible !important;
+    display: block !important;
+  }
+  body.print-stats-only .stats-export-area {
+    display: flex !important;
+    position: fixed !important;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: white !important;
+    z-index: 99999;
+    padding: 40px !important;
+    max-height: none !important;
+  }
+}

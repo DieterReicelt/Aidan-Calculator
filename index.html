@@ -339,6 +339,10 @@
       </div>
       <div class="buttons">
         <button class="btn-sci" id="angle-mode-btn" onclick="toggleAngleMode()">DEG</button>
+        <button class="btn-special" onclick="memoryAdd()">M+</button>
+        <button class="btn-special" onclick="memorySubtract()">M-</button>
+        <button class="btn-special" onclick="memoryRecall()">MR</button>
+        <button class="btn-special" onclick="memoryClear()">MC</button>
         <button class="btn-sci" onclick="calcSci('abs')">|x|</button>
         <button class="btn-sci" onclick="calcSci('fact')">x!</button>
         <button class="btn-sci" onclick="calcSci('prime')">Prime?</button>
@@ -350,6 +354,7 @@
         <button class="btn-special" onclick="insertConst('e')">e</button>
         <button class="btn-special" onclick="insertConst('tau')">τ</button>
         <button class="btn-special" onclick="insertConst('phi')">φ</button>
+        <button class="btn-special" onclick="insertAns()">Ans</button>
         <button class="btn-sci" onclick="calcSci('log')">log</button>
         <button class="btn-sci" onclick="calcSci('ln')">ln</button>
         <button class="btn-sci" onclick="calcSci('sq')">x²</button>
@@ -394,6 +399,21 @@
         
         <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 2px;">Postfix (RPN) Stack</div>
         <div id="adv-postfix" style="font-family: 'Courier New', monospace; font-size: 0.9rem; min-height: 2.5rem; color: #5566aa; word-wrap: break-word;"></div>
+        <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; margin: 8px 0 2px;">Shunting-yard Steps</div>
+        <div id="adv-steps" class="history-panel" style="margin-top: 0; max-height: 95px;"></div>
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <button id="adv-play-btn" onclick="toggleAdvPlayback()" style="flex:1; padding:6px 8px; font-size:0.7rem;" class="btn-special">Play</button>
+          <button onclick="advNextStep()" style="flex:1; padding:6px 8px; font-size:0.7rem;" class="btn-sci">Next</button>
+          <button onclick="advResetSteps()" style="flex:1; padding:6px 8px; font-size:0.7rem;" class="btn-clear">Reset</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+          <span style="font-size:0.7rem; color:#888; text-transform:uppercase;">Speed</span>
+          <select id="adv-speed" onchange="updateAdvPlaybackSpeed()" class="ld-input" style="padding:4px 8px; font-size:0.75rem; max-width:140px;">
+            <option value="slow">Slow</option>
+            <option value="normal" selected>Normal</option>
+            <option value="fast">Fast</option>
+          </select>
+        </div>
         
         <div style="flex: 1;"></div>
         <div id="adv-res" style="color: #b22222; font-family: 'Courier New', monospace; font-size: 2.2rem; font-weight: 700; text-align: right; width: 100%;">0</div>
@@ -757,6 +777,8 @@
 
     // --- SCIENTIFIC LOGIC ---
     let sciExpr = ""; let angleMode = "deg";
+    let sciMemory = 0;
+    let sciAns = 0;
     // Initialize history from localStorage safely
     let sciHistoryRaw = localStorage.getItem('sciHistory');
     let sciHistory = [];
@@ -769,6 +791,7 @@
 
     function insertChar(c) { sciExpr += c; updateSciDisplay(); }
     function insertConst(n) { const m={'pi':'Math.PI','e':'Math.E','tau':'(Math.PI * 2)','phi':'((1 + Math.sqrt(5)) / 2)'}; sciExpr += m[n]; updateSciDisplay(); }
+    function insertAns() { sciExpr += String(sciAns); updateSciDisplay(); }
     function updateSciDisplay() { 
       document.getElementById('sci-expr').textContent = sciExpr.replace(/Math\.PI/g,'π').replace(/Math\.E/g,'e').replace(/\*\*/g,'^'); 
       let last = sciExpr.split(/[\+\-\*\/\(]/).pop();
@@ -783,6 +806,28 @@
       if (msg.length > 28) return msg.slice(0, 28) + "...";
       return msg;
     }
+    function getSciCurrentValue() {
+      const cur = parseFloat(document.getElementById('sci-res').textContent);
+      if (!isFinite(cur)) throw new Error("No valid current value");
+      return cur;
+    }
+    function memoryAdd() {
+      try {
+        sciMemory += getSciCurrentValue();
+        document.getElementById('sci-expr').textContent = `Memory: ${parseFloat(sciMemory.toFixed(10))}`;
+      } catch(e) { document.getElementById('sci-res').textContent = formatParserError(e); }
+    }
+    function memorySubtract() {
+      try {
+        sciMemory -= getSciCurrentValue();
+        document.getElementById('sci-expr').textContent = `Memory: ${parseFloat(sciMemory.toFixed(10))}`;
+      } catch(e) { document.getElementById('sci-res').textContent = formatParserError(e); }
+    }
+    function memoryRecall() { sciExpr += String(parseFloat(sciMemory.toFixed(10))); updateSciDisplay(); }
+    function memoryClear() {
+      sciMemory = 0;
+      document.getElementById('sci-expr').textContent = "Memory cleared";
+    }
 
     function calculateSci() {
       if (sciExpr === "") return;
@@ -796,6 +841,7 @@
         let res = evaluateRPN(postfix);
         if(!isFinite(res)) throw "err";
         res = parseFloat(res.toFixed(10));
+        sciAns = res;
         let niceExpr = sciExpr.replace(/Math\.PI/g,'π').replace(/Math\.E/g,'e').replace(/\*\*/g,'^');
         addSciHistory(niceExpr, res);
         document.getElementById('sci-res').textContent = res;
@@ -812,16 +858,27 @@
         case 'sin': res = (angleMode==='deg'?Math.sin(cur*Math.PI/180):Math.sin(cur)); label=`sin(${cur})`; break;
         case 'cos': res = (angleMode==='deg'?Math.cos(cur*Math.PI/180):Math.cos(cur)); label=`cos(${cur})`; break;
         case 'tan': res = (angleMode==='deg'?Math.tan(cur*Math.PI/180):Math.tan(cur)); label=`tan(${cur})`; break;
-        case 'sqrt': res = Math.sqrt(cur); label=`√(${cur})`; break;
-        case 'log': res = Math.log10(cur); label=`log(${cur})`; break;
-        case 'ln': res = Math.log(cur); label=`ln(${cur})`; break;
+        case 'sqrt':
+          if (cur < 0) throw new Error("sqrt needs non-negative");
+          res = Math.sqrt(cur); label=`√(${cur})`; break;
+        case 'log':
+          if (cur <= 0) throw new Error("log needs value > 0");
+          res = Math.log10(cur); label=`log(${cur})`; break;
+        case 'ln':
+          if (cur <= 0) throw new Error("ln needs value > 0");
+          res = Math.log(cur); label=`ln(${cur})`; break;
         case 'sq': res = cur*cur; label=`${cur}²`; break;
-        case 'inv': res = 1/cur; label=`1/${cur}`; break;
+        case 'inv':
+          if (cur === 0) throw new Error("Cannot divide by 0");
+          res = 1/cur; label=`1/${cur}`; break;
         case 'abs': res = Math.abs(cur); label=`|${cur}|`; break;
-        case 'fact': res=1; for(let i=2;i<=cur;i++) res*=i; label=`${cur}!`; break;
+        case 'fact':
+          if (cur < 0 || !Number.isInteger(cur)) throw new Error("Factorial needs integer >= 0");
+          res=1; for(let i=2;i<=cur;i++) res*=i; label=`${cur}!`; break;
         case 'prime': let p=cur>1; for(let i=2;i*i<=cur;i++) if(cur%i===0) p=false; document.getElementById('sci-res').textContent = p?"PRIME":"NOT PRIME"; return;
       }
       res = parseFloat(res.toFixed(10)); addSciHistory(label, res);
+      sciAns = res;
       document.getElementById('sci-res').textContent = res; sciExpr = String(res);
     }
 
@@ -1148,26 +1205,101 @@
 
     // --- ADVANCED PARSER LOGIC (Shunting-yard) ---
     let advExpr = "";
+    let advLatestSteps = [];
+    let advPlaybackIndex = 0;
+    let advPlaybackTimer = null;
+    let advIsPlaying = false;
+    function getAdvPlaybackDelay() {
+      const speed = document.getElementById('adv-speed')?.value || 'normal';
+      if (speed === 'slow') return 1100;
+      if (speed === 'fast') return 350;
+      return 700;
+    }
     function insertAdv(c) { advExpr += c; liveUpdateAdv(); }
     function clearAdv() { advExpr = ""; liveUpdateAdv(); document.getElementById('adv-res').textContent = "0"; }
     function backspaceAdv() { advExpr = advExpr.slice(0, -1); liveUpdateAdv(); }
+    function stopAdvPlaybackTimer() {
+      if (advPlaybackTimer) {
+        clearInterval(advPlaybackTimer);
+        advPlaybackTimer = null;
+      }
+      advIsPlaying = false;
+      const playBtn = document.getElementById('adv-play-btn');
+      if (playBtn) playBtn.textContent = "Play";
+    }
+    function toggleAdvPlayback() {
+      if (advIsPlaying) {
+        stopAdvPlaybackTimer();
+        return;
+      }
+      if (!advLatestSteps.length) return;
+      if (advPlaybackIndex >= advLatestSteps.length) advPlaybackIndex = 0;
+      advIsPlaying = true;
+      const playBtn = document.getElementById('adv-play-btn');
+      if (playBtn) playBtn.textContent = "Pause";
+      advPlaybackTimer = setInterval(() => {
+        if (advPlaybackIndex < advLatestSteps.length) {
+          advPlaybackIndex++;
+          renderAdvSteps(advLatestSteps, advPlaybackIndex);
+        } else {
+          stopAdvPlaybackTimer();
+        }
+      }, getAdvPlaybackDelay());
+    }
+    function advNextStep() {
+      stopAdvPlaybackTimer();
+      if (!advLatestSteps.length) return;
+      advPlaybackIndex = Math.min(advPlaybackIndex + 1, advLatestSteps.length);
+      renderAdvSteps(advLatestSteps, advPlaybackIndex);
+    }
+    function advResetSteps() {
+      stopAdvPlaybackTimer();
+      advPlaybackIndex = 0;
+      renderAdvSteps(advLatestSteps, 0);
+    }
+    function updateAdvPlaybackSpeed() {
+      if (!advIsPlaying) return;
+      if (!advLatestSteps.length || advPlaybackIndex >= advLatestSteps.length) return;
+      if (advPlaybackTimer) clearInterval(advPlaybackTimer);
+      advPlaybackTimer = setInterval(() => {
+        if (advPlaybackIndex < advLatestSteps.length) {
+          advPlaybackIndex++;
+          renderAdvSteps(advLatestSteps, advPlaybackIndex);
+        } else {
+          stopAdvPlaybackTimer();
+        }
+      }, getAdvPlaybackDelay());
+    }
 
     function liveUpdateAdv() {
       const infixEl = document.getElementById('adv-infix');
       const postfixEl = document.getElementById('adv-postfix');
-      if (!infixEl || !postfixEl) return;
+      const stepsEl = document.getElementById('adv-steps');
+      if (!infixEl || !postfixEl || !stepsEl) return;
       infixEl.textContent = advExpr.replace(/\*/g, '×').replace(/\//g, '÷');
       
       try {
         if (advExpr.trim() === "") {
+          stopAdvPlaybackTimer();
+          advLatestSteps = [];
+          advPlaybackIndex = 0;
           postfixEl.textContent = "";
+          stepsEl.innerHTML = "";
           return;
         }
         const tokens = tokenize(advExpr);
-        const postfix = shuntingYard(tokens);
-        postfixEl.textContent = postfix.join(" ");
+        const conversion = shuntingYardDetailed(tokens);
+        stopAdvPlaybackTimer();
+        advLatestSteps = conversion.steps;
+        advPlaybackIndex = conversion.steps.length;
+        postfixEl.textContent = conversion.postfix.join(" ");
+        renderAdvSteps(advLatestSteps, advPlaybackIndex);
       } catch (e) {
+        stopAdvPlaybackTimer();
+        advLatestSteps = [];
+        advPlaybackIndex = 0;
         postfixEl.textContent = "...";
+        stepsEl.innerHTML = "";
       }
     }
 
@@ -1182,6 +1314,22 @@
       } catch (e) {
         document.getElementById('adv-res').textContent = formatParserError(e);
       }
+    }
+    function renderAdvSteps(steps, visibleCount) {
+      const stepsEl = document.getElementById('adv-steps');
+      if (!stepsEl) return;
+      if (!steps || steps.length === 0) {
+        stepsEl.innerHTML = "";
+        return;
+      }
+      const count = visibleCount === undefined ? steps.length : Math.max(0, Math.min(visibleCount, steps.length));
+      if (count === 0) {
+        stepsEl.innerHTML = `<div class="history-item">Press <strong>Play</strong> to animate steps.</div>`;
+        return;
+      }
+      stepsEl.innerHTML = steps.slice(0, count).map((s, i) => (
+        `<div class="history-item"><strong>${i + 1}.</strong> token=<strong>${s.token}</strong> | op=[${s.operatorStack.join(' ')}] | out=[${s.outputQueue.join(' ')}]</div>`
+      )).join('');
     }
 
     function tokenize(str) {
@@ -1208,8 +1356,12 @@
     }
 
     function shuntingYard(tokens) {
+      return shuntingYardDetailed(tokens).postfix;
+    }
+    function shuntingYardDetailed(tokens) {
       const outputQueue = [];
       const operatorStack = [];
+      const steps = [];
       const operators = {
         'u-': { prec: 5, assoc: 'R' },
         '^': { prec: 4, assoc: 'R' },
@@ -1219,24 +1371,38 @@
         '-': { prec: 2, assoc: 'L' }
       };
       const functions = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'abs', 'fact'];
+      const pushStep = (token) => {
+        steps.push({
+          token,
+          operatorStack: [...operatorStack],
+          outputQueue: [...outputQueue]
+        });
+      };
 
       tokens.forEach(token => {
         if (!isNaN(token)) {
           outputQueue.push(token);
+          pushStep(token);
         } else if (['pi', 'e', 'tau', 'phi'].includes(token)) {
           outputQueue.push(token); // Keep name for display, value in eval
+          pushStep(token);
         } else if (functions.includes(token)) {
           operatorStack.push(token);
+          pushStep(token);
         } else if (token === '(') {
           operatorStack.push(token);
+          pushStep(token);
         } else if (token === ')') {
           while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
             outputQueue.push(operatorStack.pop());
+            pushStep('pop');
           }
           if (operatorStack.length === 0) throw new Error("Mismatched parentheses");
           operatorStack.pop(); // Remove '('
+          pushStep(')');
           if (operatorStack.length > 0 && functions.includes(operatorStack[operatorStack.length - 1])) {
             outputQueue.push(operatorStack.pop());
+            pushStep('func-pop');
           }
         } else if (operators[token]) {
           const o1 = token;
@@ -1246,11 +1412,13 @@
             if ((operators[o1].assoc === 'L' && operators[o1].prec <= operators[o2].prec) ||
                 (operators[o1].assoc === 'R' && operators[o1].prec < operators[o2].prec)) {
               outputQueue.push(operatorStack.pop());
+              pushStep('pop');
             } else {
               break;
             }
           }
           operatorStack.push(o1);
+          pushStep(token);
         }
       });
 
@@ -1258,8 +1426,9 @@
         const op = operatorStack.pop();
         if (op === '(' || op === ')') throw new Error("Mismatched parentheses");
         outputQueue.push(op);
+        pushStep('drain');
       }
-      return outputQueue;
+      return { postfix: outputQueue, steps };
     }
 
     function evaluateRPN(postfix) {
@@ -1278,18 +1447,33 @@
             '+': (a, b) => a + b,
             '-': (a, b) => a - b,
             '*': (a, b) => a * b,
-            '/': (a, b) => a / b,
+            '/': (a, b) => {
+              if (b === 0) throw new Error("Cannot divide by 0");
+              return a / b;
+            },
             '^': (a, b) => Math.pow(a, b)
           };
           const funcs = {
             'sin': (a) => (angleMode === 'deg' ? Math.sin(a * Math.PI / 180) : Math.sin(a)),
             'cos': (a) => (angleMode === 'deg' ? Math.cos(a * Math.PI / 180) : Math.cos(a)),
             'tan': (a) => (angleMode === 'deg' ? Math.tan(a * Math.PI / 180) : Math.tan(a)),
-            'sqrt': (a) => Math.sqrt(a),
-            'log': (a) => Math.log10(a),
-            'ln': (a) => Math.log(a),
+            'sqrt': (a) => {
+              if (a < 0) throw new Error("sqrt needs non-negative");
+              return Math.sqrt(a);
+            },
+            'log': (a) => {
+              if (a <= 0) throw new Error("log needs value > 0");
+              return Math.log10(a);
+            },
+            'ln': (a) => {
+              if (a <= 0) throw new Error("ln needs value > 0");
+              return Math.log(a);
+            },
             'abs': (a) => Math.abs(a),
-            'fact': (a) => { let r = 1; for (let i = 2; i <= a; i++) r *= i; return r; }
+            'fact': (a) => {
+              if (a < 0 || !Number.isInteger(a)) throw new Error("Factorial needs integer >= 0");
+              let r = 1; for (let i = 2; i <= a; i++) r *= i; return r;
+            }
           };
 
           if (token === 'u-') {
