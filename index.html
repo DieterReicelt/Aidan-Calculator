@@ -68,13 +68,13 @@
       justify-content: center;
       min-height: 100vh;
       font-family: 'Segoe UI', sans-serif;
-      padding: 10px 0;
+      padding: 10px;
     }
 
-    h1 { color: var(--header-text); font-size: 1.1rem; margin-bottom: 12px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
+    h1 { color: var(--header-text); font-size: 1.1rem; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; text-align: center; }
 
     /* ---- TAB BAR DROPDOWN ---- */
-    .tab-bar { width: 520px; max-width: 95%; margin-bottom: 10px; }
+    .tab-bar { width: 520px; max-width: 100%; margin-bottom: 10px; }
     .tab-select {
       width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px;
       background: #13132a; color: #a0c4ff; font-size: 0.9rem; font-weight: 700; cursor: pointer;
@@ -86,8 +86,8 @@
 
     /* ---- MAIN CALCULATOR BOX ---- */
     .calculator {
-      background: #1e1e2e; border-radius: 0 0 20px 20px; padding: 25px;
-      box-shadow: 0 30px 70px rgba(0,0,0,0.5); width: 520px; max-width: 95%;
+      background: #1e1e2e; border-radius: 20px; padding: 20px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.5); width: 520px; max-width: 100%;
       border: 1px solid var(--border-color);
     }
     .panel { display: none; }
@@ -105,20 +105,21 @@
       background-size: 100% 100%, 25px 25px, 25px 25px;
       background-position: 0 45px, 0 0, 0 0;
       border: 2px solid #888; border-radius: 6px;
-      padding: 15px 25px; margin-bottom: 20px; text-align: right;
+      padding: 15px; margin-bottom: 20px; text-align: right;
       position: relative; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-      min-height: 180px; display: flex; flex-direction: column; justify-content: flex-end;
+      min-height: 160px; display: flex; flex-direction: column; justify-content: flex-end;
       overflow-x: auto;
     }
 
     .expression {
-      color: #2c3e50; font-family: 'Times New Roman', serif; font-style: italic; font-size: 1.2rem;
-      min-height: 25px; margin-bottom: 5px; z-index: 2;
+      color: #2c3e50; font-family: 'Times New Roman', serif; font-style: italic; font-size: 1.1rem;
+      min-height: 25px; margin-bottom: 5px; z-index: 2; word-break: break-all;
     }
 
     .result {
-      color: #b22222; font-family: 'Courier New', monospace; font-size: 2.8rem;
-      font-weight: 700; letter-spacing: -1px; position: absolute; top: 5px; right: 25px; z-index: 2;
+      color: #b22222; font-family: 'Courier New', monospace; font-size: 2.5rem;
+      font-weight: 700; letter-spacing: -1px; position: absolute; top: 5px; right: 15px; z-index: 2;
+      max-width: 90%; overflow: hidden; text-overflow: ellipsis;
     }
 
     /* Long Division & Multiplication Grid Styles */
@@ -142,8 +143,9 @@
 
     /* ---- BUTTONS & INPUTS ---- */
     .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    button { padding: 14px 4px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.1s; }
+    button { padding: 14px 4px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent; }
     button:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    button:active { transform: translateY(1px); filter: brightness(0.9); }
 
     .btn-sci { background: var(--btn-sci-bg); color: var(--btn-sci-text); }
     .btn-num { background: var(--btn-num-bg); color: var(--btn-num-text); }
@@ -152,8 +154,8 @@
     .btn-clear { background: var(--btn-clear-bg); color: var(--btn-clear-text); }
     .btn-special { background: var(--btn-special-bg); color: var(--btn-special-text); }
 
-    .ld-input-row { display: flex; gap: 8px; margin-bottom: 12px; width: 100%; }
-    .ld-input { flex: 1; min-width: 0; padding: 12px; background: #13132a; border: 1px solid #3a3a6a; border-radius: 8px; color: #e8f4ff; text-align: center; outline: none; }
+    .ld-input-row { display: flex; gap: 8px; margin-bottom: 12px; width: 100%; flex-wrap: wrap; }
+    .ld-input { flex: 1; min-width: 80px; padding: 12px; background: #13132a; border: 1px solid #3a3a6a; border-radius: 8px; color: #e8f4ff; text-align: center; outline: none; font-size: 1rem; }
     .ld-input:focus { border-color: #a0c4ff; background: #1a1a3a; }
 
     /* KEYPAD STYLE */
@@ -168,13 +170,30 @@
     }
     .keypad button { padding: 12px 0; font-size: 1.1rem; }
 
-    .history-panel { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; max-height: 80px; overflow-y: auto; }
-    .history-item { font-size: 0.8rem; color: #8899bb; border-bottom: 1px solid #2a2a4a; padding: 2px 0; }
+    .history-panel { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; max-height: 100px; overflow-y: auto; }
+    .history-item { font-size: 0.8rem; color: #8899bb; border-bottom: 1px solid #2a2a4a; padding: 4px 0; }
     .history-item strong { color: #a0c4ff; }
 
     .lesson-box { margin-top: 12px; background: #fffdf0; border: 1px dashed #ccc; border-radius: 8px; padding: 12px; color: #444; font-size: 0.85rem; display: none; }
     .lesson-box.visible { display: block; }
     .lesson-title { color: #b22222; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; }
+
+    /* MOBILE ADJUSTMENTS */
+    @media (max-width: 480px) {
+      body { padding: 5px; }
+      .calculator { padding: 15px; border-radius: 15px; }
+      .buttons { gap: 5px; }
+      button { padding: 12px 2px; font-size: 0.9rem; }
+      .result { font-size: 2rem; }
+      .display { min-height: 140px; padding: 10px; }
+      h1 { font-size: 1rem; letter-spacing: 1px; }
+      .tab-select { font-size: 0.85rem; padding: 10px; }
+    }
+
+    @media (max-height: 600px) {
+      body { justify-content: flex-start; }
+      .display { min-height: 120px; }
+    }
 
     @media print {
       body { background: white !important; color: black !important; }
