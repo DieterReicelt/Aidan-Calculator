@@ -185,7 +185,7 @@ EOF
     echo "1. Copy the public key above"
     echo "2. Add it to GitHub: https://github.com/settings/keys"
     echo "3. Update deploy.sh with your GitHub SSH URL:"
-    echo "   export REPO_URL='git@github.com:yourusername/aidan-calculator.git'"
+    echo "   export REPO_URL='git@github.com:DieterReicelt/Aidan-Calculator.git'"
     echo "4. Run: sudo $SSH_USER -c '/path/to/deploy.sh'"
     echo ""
 }
