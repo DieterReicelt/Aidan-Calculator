@@ -76,7 +76,7 @@ cat ~/.ssh/id_ed25519_github.pub
 
 ```bash
 ssh -T git@github.com
-# Output: Hi DieterReicelt! You've successfully authenticated...
+# Output: Hi DieterReichelt! You've successfully authenticated...
 ```
 
 #### Update Repository URL
@@ -84,7 +84,7 @@ ssh -T git@github.com
 The `deploy.sh` script now defaults to SSH. If you need HTTPS instead:
 
 ```bash
-export REPO_URL="https://github.com/DieterReicelt/Aidan-Calculator.git"
+export REPO_URL="https://github.com/DieterReichelt/Aidan-Calculator.git"
 sudo ./deploy.sh
 ```
 
@@ -98,7 +98,7 @@ Before running the deployment, configure these variables:
 
 ```bash
 # GitHub repository URL (SSH recommended - see SSH Setup section above)
-export REPO_URL="git@github.com:DieterReicelt/Aidan-Calculator.git"
+export REPO_URL="git@github.com:DieterReichelt/Aidan-Calculator.git"
 
 # Local directory for the repository (will be cloned here)
 export REPO_DIR="/opt/aidans-calculator"
@@ -115,7 +115,7 @@ export BRANCH="main"
 The `deploy.sh` script defaults to SSH for secure access. If you need HTTPS instead:
 
 ```bash
-export REPO_URL="https://github.com/DieterReicelt/Aidan-Calculator.git"
+export REPO_URL="https://github.com/DieterReichelt/Aidan-Calculator.git"
 ```
 
 ## Initial Setup
@@ -202,7 +202,7 @@ sudo systemctl reload apache2
 sudo ./deploy.sh
 
 # Method 2: Using environment variables
-sudo REPO_URL="https://github.com/DieterReicelt/Aidan-Calculator.git" \
+sudo REPO_URL="https://github.com/DieterReichelt/Aidan-Calculator.git" \
       REPO_DIR="/opt/aidans-calculator" \
       WEB_ROOT="/var/www/aidans-calculator" \
       ./deploy.sh
@@ -229,7 +229,7 @@ On your production server:
 ```bash
 # 1. Clone the repository
 cd /opt
-git clone git@github.com:DieterReicelt/Aidan-Calculator.git aidans-calculator
+git clone git@github.com:DieterReichelt/Aidan-Calculator.git aidans-calculator
 cd aidans-calculator
 
 # 2. Setup SSH if not already done
