@@ -9,7 +9,9 @@
 set -e  # Exit on error
 
 # Configuration
-REPO_URL="${REPO_URL:-https://github.com/yourusername/aidan-calculator.git}"
+# Use SSH URL for secure GitHub access (recommended for production)
+# Ensure SSH key is configured: ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github
+REPO_URL="${REPO_URL:-git@github.com:yourusername/aidan-calculator.git}"
 REPO_DIR="${REPO_DIR:-/opt/aidans-calculator}"
 BUILD_DIR="${REPO_DIR}/dist"
 WEB_ROOT="${WEB_ROOT:-/var/www/aidans-calculator}"
@@ -47,6 +49,18 @@ check_requirements() {
     command -v npm &> /dev/null || error "npm is not installed"
     
     log "✓ All requirements met (git, Node.js, npm)"
+    
+    # Check SSH key for GitHub access
+    if [[ "$REPO_URL" == git@github.com* ]]; then
+        log "Checking GitHub SSH access..."
+        if ! ssh -T git@github.com &> /dev/null; then
+            warning "SSH key not configured or GitHub SSH connection failed"
+            warning "Set up SSH key or switch to HTTPS:"
+            warning "  export REPO_URL='https://github.com/yourusername/aidan-calculator.git'"
+        else
+            log "✓ GitHub SSH access verified"
+        fi
+    fi
 }
 
 setup_directories() {

@@ -17,6 +17,79 @@ apt update
 apt install -y git nodejs npm nginx
 ```
 
+## SSH Setup (Recommended for Production)
+
+### Secure GitHub Access with SSH
+
+For production environments, SSH is more secure and reliable than HTTPS credentials.
+
+#### Quick Setup (Automated)
+
+```bash
+# Download and run the SSH setup script
+sudo ./setup-ssh.sh
+
+# Or for a specific web server user (www-data, www, etc.)
+sudo ./setup-ssh.sh --user www-data
+```
+
+This script will:
+- Generate an ED25519 SSH key
+- Create SSH config for GitHub
+- Display your public key
+- Test the connection
+
+#### Manual Setup
+
+```bash
+# Generate SSH key (as root or your deployment user)
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github -N "" -C "github-$(hostname)"
+
+# Create SSH config
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+cat >> ~/.ssh/config <<EOF
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+    AddKeysToAgent yes
+    IdentitiesOnly yes
+    StrictHostKeyChecking accept-new
+EOF
+
+chmod 600 ~/.ssh/config
+
+# Display public key
+cat ~/.ssh/id_ed25519_github.pub
+```
+
+#### Add Public Key to GitHub
+
+1. Copy the public key from the output above
+2. Go to https://github.com/settings/keys
+3. Click "New SSH key"
+4. Paste the key and save
+
+#### Verify SSH Connection
+
+```bash
+ssh -T git@github.com
+# Output: Hi yourusername! You've successfully authenticated...
+```
+
+#### Update Repository URL
+
+The `deploy.sh` script now defaults to SSH. If you need HTTPS instead:
+
+```bash
+export REPO_URL="https://github.com/yourusername/aidan-calculator.git"
+sudo ./deploy.sh
+```
+
+---
+
 ## Configuration
 
 ### 1. Set Environment Variables
@@ -24,8 +97,8 @@ apt install -y git nodejs npm nginx
 Before running the deployment, configure these variables:
 
 ```bash
-# GitHub repository URL
-export REPO_URL="https://github.com/yourusername/aidan-calculator.git"
+# GitHub repository URL (SSH recommended - see SSH Setup section above)
+export REPO_URL="git@github.com:yourusername/aidan-calculator.git"
 
 # Local directory for the repository (will be cloned here)
 export REPO_DIR="/opt/aidans-calculator"
@@ -37,15 +110,13 @@ export WEB_ROOT="/var/www/aidans-calculator"
 export BRANCH="main"
 ```
 
-### 2. Update Repository URL
+### 2. Update Repository URL (Optional)
 
-Edit the `deploy.sh` script and update the default `REPO_URL`:
+The `deploy.sh` script defaults to SSH for secure access. If you need HTTPS instead:
 
 ```bash
-REPO_URL="https://github.com/yourusername/aidan-calculator.git"
+export REPO_URL="https://github.com/yourusername/aidan-calculator.git"
 ```
-
-Or pass it as an environment variable when running the script.
 
 ## Initial Setup
 
@@ -151,6 +222,23 @@ sudo ./deploy.sh
 sudo BRANCH="develop" ./deploy.sh
 ```
 
+## Initial Deployment
+
+On your production server:
+
+```bash
+# 1. Clone the repository
+cd /opt
+git clone git@github.com:yourusername/aidan-calculator.git aidans-calculator
+cd aidans-calculator
+
+# 2. Setup SSH if not already done
+sudo ./setup-ssh.sh
+
+# 3. Run initial deployment
+sudo ./deploy.sh
+```
+
 ## What the Script Does
 
 1. ✅ **Checks Requirements** - Verifies git, Node.js, and npm are installed
@@ -230,19 +318,6 @@ sudo systemctl status apache2
 sudo apache2ctl configtest
 ```
 
-### GitHub authentication
-
-If deploying a private repository, set up SSH or use a personal access token:
-
-```bash
-# SSH setup
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github -C "your@email.com"
-# Add public key to GitHub settings
-
-# Update REPO_URL to use SSH
-export REPO_URL="git@github.com:yourusername/aidan-calculator.git"
-```
-
 ## HTTPS / SSL (Let's Encrypt)
 
 For production, always use HTTPS:
@@ -259,12 +334,14 @@ sudo certbot certonly --nginx -d aidans-calculator.yourdomain.com
 
 ## Security Considerations
 
+- ✅ Use SSH for GitHub access (configured by default)
 - ✅ Keep web server and Node.js updated
 - ✅ Use HTTPS in production
 - ✅ Monitor logs for suspicious activity
 - ✅ Consider rate limiting and DDoS protection
 - ✅ Set up proper firewall rules
-- ✅ Use strong GitHub credentials (SSH keys or PAT)
+- ✅ Restrict SSH key access to deployment user only
+- ✅ Use `StrictHostKeyChecking accept-new` in SSH config
 
 ## Support
 
